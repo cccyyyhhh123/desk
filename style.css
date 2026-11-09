@@ -601,6 +601,35 @@ td.num.neg { color: var(--muted); }
   .cardface__key { font-size: 0.5rem; letter-spacing: 0.1em; }
   .cardface__top { font-size: 0.5rem; letter-spacing: 0.14em; }
 }
+/* 正念 breathing */
+.breathe-panel { display: grid; gap: 6px; }
+.breathe-panel__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.breathe-count {
+  flex: none; font-size: 0.8rem; color: var(--muted-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.breathe {
+  display: grid; place-items: center; gap: 14px;
+  padding: 26px 0 20px; position: relative; min-height: 15rem;
+}
+.breathe__orb {
+  width: 8.5rem; height: 8.5rem; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, rgba(196, 181, 253, 0.9), rgba(139, 92, 246, 0.55) 55%, rgba(76, 43, 140, 0.25));
+  box-shadow: 0 0 42px rgba(139, 92, 246, 0.35), inset 0 0 24px rgba(255, 255, 255, 0.18);
+  transform: scale(0.82);
+  transition: transform 6s cubic-bezier(0.37, 0, 0.63, 1);
+}
+.breathe__orb.is-in { transform: scale(1.12); transition-duration: 4s; }
+.breathe__orb.is-out { transform: scale(0.82); transition-duration: 6s; }
+.breathe__label {
+  font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); min-height: 1.2em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breathe__orb { transition: none; }
+}
 /* 7 · phone */
 @media (max-width: 1000px) {
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }

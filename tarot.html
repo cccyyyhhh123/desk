@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
 
@@ -45,10 +45,30 @@
 
     <div class="spread" id="spread"></div>
   </section>
+
+  <section class="panel breathe-panel">
+    <div class="breathe-panel__head">
+      <div>
+        <h2>正念 · Breathe</h2>
+        <p class="hint small" style="margin-bottom:0">Four seconds in, six seconds out. Twenty
+          seconds is enough to land; the count is for today only.</p>
+      </div>
+      <p class="breathe-count" id="breatheCount">0 rounds today</p>
+    </div>
+
+    <div class="breathe" id="breathe">
+      <div class="breathe__orb" id="breatheOrb"></div>
+      <p class="breathe__label" id="breatheLabel">Ready when you are</p>
+    </div>
+
+    <div class="row" style="justify-content:center">
+      <button class="btn btn--primary" id="breatheToggle" type="button">Start breathing</button>
+    </div>
+  </section>
 </main>
 
 <script src="sky.js?v=9"></script>
-<script>window.__DESK_BUILD__ = 'v10';</script>
+<script>window.__DESK_BUILD__ = 'v11';</script>
 <script src="nav.js?v=9"></script>
 <script>
   /* ---------- the twenty-two majors ----------
@@ -275,12 +295,7 @@
     revealed = [false, false, false];
     render();
     updateStatus();
-    try {
-      localStorage.setItem('deskTarotLast', JSON.stringify({
-        names: current.map(function (card) { return card.name; }),
-        at: Date.now()
-      }));
-    } catch (e) {}
+
   }
 
   document.getElementById('draw').addEventListener('click', draw);
@@ -292,6 +307,89 @@
   });
 
   draw();
+
+  /* ---------- 正念: four in, six out ----------
+     One orb that grows on the inhale and settles on the exhale, so the pace
+     is something to follow rather than a number to watch. Rounds are kept
+     for the current day only. */
+  (function () {
+    var orb = document.getElementById('breatheOrb');
+    var label = document.getElementById('breatheLabel');
+    var toggle = document.getElementById('breatheToggle');
+    var countEl = document.getElementById('breatheCount');
+    if (!orb || !toggle) return;
+
+    var STORE = 'deskMindful';
+    var IN = 4000;
+    var OUT = 6000;
+
+    var running = false;
+    var timer = 0;
+    var rounds = 0;
+
+    function today() { return new Date().toISOString().slice(0, 10); }
+
+    function load() {
+      try {
+        var saved = JSON.parse(localStorage.getItem(STORE)) || null;
+        rounds = saved && saved.date === today() ? Number(saved.rounds) || 0 : 0;
+      } catch (e) { rounds = 0; }
+    }
+    function save() {
+      try { localStorage.setItem(STORE, JSON.stringify({ date: today(), rounds: rounds })); } catch (e) {}
+    }
+    function paintCount() {
+      countEl.textContent = rounds + (rounds === 1 ? ' round today' : ' rounds today');
+    }
+
+    function inhale() {
+      if (!running) return;
+      label.textContent = 'Breathe in';
+      orb.classList.remove('is-out');
+      orb.classList.add('is-in');
+      timer = setTimeout(exhale, IN);
+    }
+
+    function exhale() {
+      if (!running) return;
+      label.textContent = 'Breathe out';
+      orb.classList.remove('is-in');
+      orb.classList.add('is-out');
+      timer = setTimeout(function () {
+        if (!running) return;
+        rounds += 1;
+        save();
+        paintCount();
+        inhale();
+      }, OUT);
+    }
+
+    function start() {
+      running = true;
+      toggle.textContent = 'Stop';
+      inhale();
+    }
+
+    function stop() {
+      running = false;
+      clearTimeout(timer);
+      toggle.textContent = rounds ? 'Start again' : 'Start breathing';
+      label.textContent = 'Paused';
+      orb.classList.remove('is-in', 'is-out');
+    }
+
+    toggle.addEventListener('click', function () {
+      if (running) stop(); else start();
+    });
+
+    /* a hidden tab should not keep breathing on its own */
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden && running) stop();
+    });
+
+    load();
+    paintCount();
+  })();
 </script>
 </body>
 </html>

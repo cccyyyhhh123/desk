@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=9">
+<link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
 
@@ -39,7 +39,7 @@
       <div><dt>Today</dt><dd id="stripDate">—</dd></div>
       <div><dt>Ledger balance</dt><dd id="stripBalance">—</dd></div>
       <div><dt>Cards known</dt><dd id="stripStudy">—</dd></div>
-      <div><dt>Last draw</dt><dd id="stripTarot">—</dd></div>
+      <div><dt>Mindful today</dt><dd id="stripMindful">—</dd></div>
     </dl>
   </section>
 
@@ -91,7 +91,7 @@
     </p>
   </section></main>
 
-<script>window.__DESK_BUILD__ = 'v10';</script>
+<script>window.__DESK_BUILD__ = 'v11';</script>
 <script src="nav.js?v=9"></script>
 <script>
   (function () {
@@ -153,14 +153,16 @@
       document.getElementById('stripStudy').textContent = 'not started';
     }
 
-    /* last tarot draw */
+    /* breathing rounds done today, from the tarot page */
     try {
-      var draw = JSON.parse(localStorage.getItem('deskTarotLast'));
-      document.getElementById('stripTarot').textContent = draw && draw.names && draw.names.length
-        ? draw.names.join(' · ')
-        : 'nothing yet';
+      var mindful = JSON.parse(localStorage.getItem('deskMindful')) || null;
+      var today = new Date().toISOString().slice(0, 10);
+      var rounds = mindful && mindful.date === today ? Number(mindful.rounds) || 0 : 0;
+      document.getElementById('stripMindful').textContent = rounds
+        ? rounds + (rounds === 1 ? ' round' : ' rounds')
+        : 'not yet';
     } catch (error) {
-      document.getElementById('stripTarot').textContent = 'nothing yet';
+      document.getElementById('stripMindful').textContent = 'not yet';
     }
   })();
 </script>
