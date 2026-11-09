@@ -244,6 +244,42 @@ img, svg, canvas { display: block; max-width: 100%; }
 .subject-note li { font-size: 0.88rem; color: var(--muted); line-height: 1.5; }
 .subject-note__link { font-size: 0.85rem; }
 
+.project-form {
+  display: grid; grid-template-columns: minmax(0, 1.6fr) 7rem 10rem auto;
+  gap: 10px; align-items: end; margin-top: 6px;
+}
+.projects { display: grid; gap: 12px; margin-top: 18px; }
+.project {
+  padding: 14px 16px; border-radius: var(--r-sm);
+  background: var(--panel-2); border: 1px solid var(--line);
+  display: grid; gap: 10px;
+}
+.project__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.project__head b { display: block; font-size: 0.98rem; color: var(--ink); }
+.project__head span { font-size: 0.78rem; color: var(--muted-2); }
+.project__actions { display: flex; gap: 6px; flex: none; }
+.project__btn { padding: 6px 12px; font-size: 0.78rem; }
+.project__bar { margin: 0; }
+
+.plan { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.plan__row {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 7px 8px; border-radius: 8px; font-size: 0.86rem; color: var(--ink-2);
+}
+.plan__row:hover { background: rgba(255, 255, 255, 0.03); }
+.plan__row input { flex: none; width: 15px; height: 15px; accent-color: #a78bfa; cursor: pointer; }
+.plan__row label { display: flex; gap: 10px; align-items: baseline; cursor: pointer; flex: 1; min-width: 0; }
+.plan__date { flex: none; width: 4.4rem; font-family: var(--mono); font-size: 0.76rem; color: var(--muted-2); }
+.plan__text { color: var(--ink-2); }
+.plan__row.is-done .plan__text { color: var(--muted-2); text-decoration: line-through; }
+
+@media (max-width: 680px) {
+  .project-form { grid-template-columns: minmax(0, 1fr) 5.5rem; }
+  .project-form .field:nth-child(3) { grid-column: 1 / -1; }
+  .project-form button { grid-column: 1 / -1; }
+  .project__head { flex-direction: column; }
+}
+
 .exams { display: grid; gap: 8px; margin-top: 14px; }
 .exam {
   display: grid; grid-template-columns: minmax(0, 1fr) 10rem 8rem;

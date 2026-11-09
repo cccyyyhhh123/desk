@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 
@@ -72,6 +72,31 @@
   </section>
 
   <section class="panel">
+    <h2>My projects</h2>
+    <p class="hint small">Name it, say how many units it has, and give it a deadline — the plan is
+      spread over the days you have left, and you tick sessions off as you go.</p>
+
+    <form class="project-form" id="projectForm">
+      <label class="field">
+        <span>Project</span>
+        <input class="input" id="projectName" type="text" maxlength="40" placeholder="e.g. Linear algebra retake" required>
+      </label>
+      <label class="field">
+        <span>Units</span>
+        <input class="input" id="projectUnits" type="number" min="2" max="30" step="1" value="6">
+      </label>
+      <label class="field">
+        <span>Deadline (optional)</span>
+        <input class="input" id="projectDate" type="text" inputmode="numeric" maxlength="10" placeholder="YYYY-MM-DD">
+      </label>
+      <button class="btn btn--primary" type="submit">Add and plan</button>
+    </form>
+    <p class="small muted" id="projectStatus" role="status" aria-live="polite" style="margin-top:10px; min-height:1.2em"></p>
+
+    <div class="projects" id="projects"></div>
+  </section>
+
+  <section class="panel">
     <div class="row" style="justify-content:space-between">
       <div>
         <h2>Exams</h2>
@@ -109,7 +134,7 @@
   </section>
 </main>
 
-<script src="nav.js?v=4"></script>
+<script src="nav.js?v=5"></script>
 <script>
   const SUBJECTS = {
     cpp: {
@@ -431,6 +456,208 @@
     });
   }
 
+  /* ---------- projects with an auto plan ----------
+     A project is a name, how many units of material it has, and a deadline.
+     The plan is spread over the days that are left: content sessions first,
+     a full pass on the last day. Re-planning starts again from today. */
+
+  const PROJECT_STORE = 'deskProjects';
+
+  function loadList(key) {
+    try {
+      const value = JSON.parse(localStorage.getItem(key));
+      return Array.isArray(value) ? value : [];
+    } catch (e) { return []; }
+  }
+  function saveList(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+  }
+
+  let projects = loadList(PROJECT_STORE);
+
+  const projectForm = document.getElementById('projectForm');
+  const projectName = document.getElementById('projectName');
+  const projectUnits = document.getElementById('projectUnits');
+  const projectDate = document.getElementById('projectDate');
+  const projectStatus = document.getElementById('projectStatus');
+  const projectsBox = document.getElementById('projects');
+
+  function startOfToday() {
+    const day = new Date();
+    day.setHours(0, 0, 0, 0);
+    return day;
+  }
+  function isoDate(date) {
+    const copy = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return copy.toISOString().slice(0, 10);
+  }
+  function dayLabel(iso) {
+    return new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  }
+
+  /* the plan: evenly spaced content sessions, then one full pass */
+  function makePlan(units, deadline) {
+    const today = startOfToday();
+    const end = deadline ? new Date(deadline + 'T00:00:00') : new Date(today.getTime() + 13 * 86400000);
+    const span = Math.max(2, Math.round((end - today) / 86400000));
+    const sessions = Math.max(3, Math.min(6, units, span));
+    const rows = [];
+
+    for (let i = 0; i < sessions - 1; i++) {
+      const offset = Math.round(i * (span - 1) / (sessions - 1));
+      const from = Math.floor(i * units / (sessions - 1)) + 1;
+      const to = Math.floor((i + 1) * units / (sessions - 1));
+      rows.push({
+        date: isoDate(new Date(today.getTime() + offset * 86400000)),
+        label: 'Units ' + from + (to > from ? '–' + to : ''),
+        done: false
+      });
+    }
+    rows.push({
+      date: isoDate(end),
+      label: 'Full pass — every unit once',
+      done: false
+    });
+    return rows;
+  }
+
+  function planProgress(project) {
+    if (!project.plan.length) return 0;
+    return Math.round(project.plan.filter(function (row) { return row.done; }).length / project.plan.length * 100);
+  }
+
+  function renderProjects() {
+    projectsBox.replaceChildren();
+    if (!projects.length) {
+      const empty = document.createElement('p');
+      empty.className = 'small muted';
+      empty.style.marginTop = '14px';
+      empty.textContent = 'No projects yet. Add one above and the plan appears here.';
+      projectsBox.appendChild(empty);
+      return;
+    }
+
+    projects.forEach(function (project) {
+      const box = document.createElement('article');
+      box.className = 'project';
+
+      const head = document.createElement('div');
+      head.className = 'project__head';
+
+      const title = document.createElement('div');
+      const name = document.createElement('b');
+      name.textContent = project.name;
+      const meta = document.createElement('span');
+      const done = project.plan.filter(function (row) { return row.done; }).length;
+      meta.textContent = done + ' / ' + project.plan.length + ' sessions' +
+        (project.deadline ? ' · due ' + dayLabel(project.deadline) : ' · no deadline');
+      title.append(name, meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'project__actions';
+      const replan = document.createElement('button');
+      replan.type = 'button';
+      replan.className = 'btn btn--ghost project__btn';
+      replan.textContent = 'Re-plan';
+      replan.addEventListener('click', function () {
+        project.plan = makePlan(project.units, project.deadline);
+        saveList(PROJECT_STORE, projects);
+        renderProjects();
+      });
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'btn btn--ghost project__btn';
+      remove.textContent = 'Remove';
+      remove.addEventListener('click', function () {
+        projects = projects.filter(function (item) { return item.id !== project.id; });
+        saveList(PROJECT_STORE, projects);
+        renderProjects();
+      });
+      actions.append(replan, remove);
+      head.append(title, actions);
+
+      const bar = document.createElement('div');
+      bar.className = 'progress project__bar';
+      const fill = document.createElement('i');
+      fill.style.width = planProgress(project) + '%';
+      bar.appendChild(fill);
+
+      const list = document.createElement('ul');
+      list.className = 'plan';
+      project.plan.forEach(function (row, index) {
+        const li = document.createElement('li');
+        li.className = 'plan__row' + (row.done ? ' is-done' : '');
+
+        const id = 'plan-' + project.id + '-' + index;
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = id;
+        checkbox.checked = row.done;
+        checkbox.addEventListener('change', function () {
+          row.done = checkbox.checked;
+          saveList(PROJECT_STORE, projects);
+          renderProjects();
+        });
+
+        const label = document.createElement('label');
+        label.setAttribute('for', id);
+
+        const date = document.createElement('span');
+        date.className = 'plan__date';
+        date.textContent = dayLabel(row.date);
+
+        const text = document.createElement('span');
+        text.className = 'plan__text';
+        text.textContent = row.label;
+
+        label.append(date, text);
+        li.append(checkbox, label);
+        list.appendChild(li);
+      });
+
+      box.append(head, bar, list);
+      projectsBox.appendChild(box);
+    });
+  }
+
+  if (projectForm) {
+    projectForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const name = projectName.value.trim();
+      const units = Math.max(2, Math.min(30, Number(projectUnits.value) || 6));
+      const deadline = projectDate.value.trim();
+
+      if (!name) {
+        projectStatus.textContent = 'Give the project a name first.';
+        return;
+      }
+      if (deadline && !/^\d{4}-\d{2}-\d{2}$/.test(deadline)) {
+        projectStatus.textContent = 'The deadline has to look like 2026-12-15, or stay empty.';
+        return;
+      }
+
+      const project = {
+        id: Date.now(),
+        name: name,
+        units: units,
+        deadline: deadline || '',
+        plan: makePlan(units, deadline || '')
+      };
+      projects.push(project);
+      saveList(PROJECT_STORE, projects);
+      renderProjects();
+
+      const first = project.plan[0];
+      const last = project.plan[project.plan.length - 1];
+      projectStatus.textContent = 'Planned: ' + project.plan.length + ' sessions, ' +
+        dayLabel(first.date) + ' → ' + dayLabel(last.date) + '.';
+
+      projectName.value = '';
+      projectUnits.value = '6';
+      projectDate.value = '';
+    });
+  }
+
   /* ---------- the deck ---------- */
   function buildOrder() {
     const subject = SUBJECTS[current];
@@ -519,6 +746,7 @@
 
   buildSubjects();
   buildNote();
+  renderProjects();
   buildExams();
   buildOrder();
   render();
