@@ -314,11 +314,16 @@ img, svg, canvas { display: block; max-width: 100%; }
 .cw__btn--dark:hover { background: #2a2a36; }
 .cw__rounds { margin-top: 12px; font-size: 0.78rem; color: rgba(23, 23, 29, 0.5); }
 
-.watches { display: grid; gap: 8px; margin-top: 10px; }
-.watch { display: flex; align-items: baseline; gap: 12px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--panel-2); border: 1px solid var(--line); }
-.watch b { font-weight: 600; }
-.watch span { color: var(--muted-2); font-size: 0.8rem; }
-.watch em { margin-left: auto; font-style: normal; font-family: var(--mono); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.cw__presets { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 16px; }
+.cw__preset {
+  border: 1px solid rgba(23, 23, 29, 0.14); background: rgba(255, 255, 255, 0.45);
+  color: rgba(23, 23, 29, 0.72); border-radius: 999px;
+  padding: 5px 12px; font-size: 0.8rem; font-weight: 500; cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.15s ease;
+}
+.cw__preset:hover { background: rgba(255, 255, 255, 0.75); color: #17171d; }
+.cw__preset:active { transform: scale(0.97); }
+.cw__preset[aria-pressed="true"] { background: #17171d; border-color: transparent; color: #fff; }
 /* ---- ledger ---- */
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
 .stat { background: var(--panel-2); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 12px 14px; }
