@@ -105,6 +105,10 @@
       </div>
     </div>
     <div class="exams" id="exams"></div>
+    <p class="small muted" style="margin-top:12px">
+      Also on the calendar: German 11/16 · Web project presentations 11/11–13.
+      The Web written exam (11/20) is the date the course site confirms; check Canvas for the rest.
+    </p>
   </section>
 
   <section class="panel">
@@ -134,7 +138,7 @@
   </section>
 </main>
 
-<script>window.__DESK_BUILD__ = 'v11';</script>
+<script>window.__DESK_BUILD__ = 'v12';</script>
 <script src="nav.js?v=9"></script>
 <script>
   const SUBJECTS = {
@@ -238,6 +242,16 @@
         { q: 'Why add aria-label or a <label>?', a: 'A visual hint does not exist for a screen reader; the accessible name has to be written in the markup.' }
       ]
     }
+  };
+
+  /* From the term record (Canvas + the teacher's site): the Web exam on
+     2026-11-20 14:00 is the one the course site confirms; the other three
+     came from the same plan and are still worth checking on Canvas. */
+  const DEFAULT_EXAMS = {
+    cpp: '2026-11-23',
+    stats: '2026-11-24',
+    data: '2026-11-25',
+    web: '2026-11-20'
   };
 
   const STORE = 'deskStudyProgress';
@@ -399,7 +413,7 @@
     el.exams.replaceChildren();
     Object.keys(SUBJECTS).forEach(function (key) {
       const subject = SUBJECTS[key];
-      const value = examDates[key] || '';
+      const value = examDates[key] || DEFAULT_EXAMS[key] || '';
 
       const row = document.createElement('div');
       row.className = 'exam';
