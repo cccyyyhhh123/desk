@@ -35,18 +35,24 @@
   </header>
 
   <section class="panel canvas-bar">
-    <div class="row" style="justify-content:space-between; align-items:flex-start">
-      <div>
-        <h2>Canvas</h2>
-        <p class="hint small" style="margin-bottom:0">Each course below opens its own page on
-          <span class="mono">learn.hibiuh.edu.cn</span>. These are plain links: reading your
-          assignments here would need an API token, and that token should not live in a public page.</p>
-      </div>
-      <div class="row" style="gap:8px">
-        <a class="btn btn--ghost" href="https://learn.hibiuh.edu.cn/" target="_blank" rel="noopener">Dashboard ↗</a>
-        <a class="btn btn--ghost" href="https://learn.hibiuh.edu.cn/calendar" target="_blank" rel="noopener">Calendar ↗</a>
-        <a class="btn btn--ghost" href="https://learn.hibiuh.edu.cn/grades" target="_blank" rel="noopener">Grades ↗</a>
-      </div>
+    <h2>Canvas &amp; Outlook</h2>
+    <p class="hint small">Each course below opens its own page on
+      <span class="mono">learn.hibiuh.edu.cn</span>. Mail and the calendar open on the Outlook web app.
+      These are plain links: reading assignments or mail from here would need an API token, and a
+      token like that should not live in a public page.</p>
+
+    <div class="linkset">
+      <span class="linkset__label">Canvas</span>
+      <a class="btn btn--ghost" href="https://learn.hibiuh.edu.cn/" target="_blank" rel="noopener">Dashboard ↗</a>
+      <a class="btn btn--ghost" href="https://learn.hibiuh.edu.cn/calendar" target="_blank" rel="noopener">Calendar ↗</a>
+      <a class="btn btn--ghost" href="https://learn.hibiuh.edu.cn/grades" target="_blank" rel="noopener">Grades ↗</a>
+    </div>
+
+    <div class="linkset">
+      <span class="linkset__label">Outlook</span>
+      <a class="btn btn--ghost btn--mail" href="https://outlook.office.com/mail/" target="_blank" rel="noopener">Inbox ↗</a>
+      <a class="btn btn--ghost btn--mail" href="https://outlook.office.com/calendar/" target="_blank" rel="noopener">Calendar ↗</a>
+      <a class="btn btn--ghost btn--mail" href="https://outlook.office.com/mail/search?q=deadline" target="_blank" rel="noopener">Search “deadline” ↗</a>
     </div>
   </section>
 

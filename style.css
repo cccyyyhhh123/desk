@@ -214,6 +214,17 @@ img, svg, canvas { display: block; max-width: 100%; }
 .embed { width: 100%; min-height: 320px; border: 1px solid var(--line); border-radius: var(--r); background: #0e0e14; }
 .embed-note { font-size: 0.85rem; color: var(--muted); margin-top: 10px; }
 
+.linkset { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.linkset__label {
+  width: 4.6rem; flex: none;
+  font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted-2);
+}
+.btn--mail::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  background: #0f6cbd; box-shadow: 0 0 0 3px rgba(15, 108, 189, 0.18);
+}
+
 /* ---- study ---- */
 .subjects { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }
 .subject {
