@@ -245,7 +245,29 @@
     });
   }
 
+  /* ---------- light or dark ----------
+     The palette variables are the same in both modes; only their values move.
+     The mode is read here, in <head>, so the first paint is already right. */
+  var MODE_KEY = 'deskMode';
+
+  function currentMode() {
+    try {
+      var saved = localStorage.getItem(MODE_KEY);
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch (e) {}
+    return 'dark';
+  }
+
+  function setMode(mode) {
+    var value = mode === 'light' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', value);
+    try { localStorage.setItem(MODE_KEY, value); } catch (e) {}
+    return value;
+  }
+
   /* apply whatever was saved, before the page paints */
+  setMode(currentMode());
+
   try {
     var saved = JSON.parse(localStorage.getItem(KEY));
     if (saved && saved.bg) apply(saved);
@@ -253,6 +275,8 @@
 
   global.DeskTheme = {
     apply: apply,
+    mode: currentMode,
+    setMode: setMode,
     save: save,
     clear: clear,
     extract: extract,

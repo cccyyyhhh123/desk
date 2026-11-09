@@ -10,6 +10,8 @@
   --panel-2: #16161d;
   --line: rgba(255, 255, 255, 0.08);
   --line-2: rgba(255, 255, 255, 0.14);
+  --hover: rgba(255, 255, 255, 0.05);
+  --hover-2: rgba(255, 255, 255, 0.09);
   --ink: #f4f4f7;
   --ink-2: rgba(255, 255, 255, 0.74);
   --muted: rgba(255, 255, 255, 0.46);
@@ -78,6 +80,16 @@ img, svg, canvas { display: block; max-width: 100%; }
     var(--nav-d) 100%);
   border-bottom: 0;
 }
+.nav__mode {
+  margin-left: 8px; width: 34px; height: 34px; padding: 0;
+  display: inline-grid; place-items: center;
+  border: 1px solid var(--line); border-radius: 999px;
+  background: transparent; color: var(--muted); cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+}
+.nav__mode:hover { color: var(--ink); border-color: var(--line-2); background: var(--hover); }
+.nav__mode svg { width: 16px; height: 16px; }
+
 .nav__brand { font-weight: 700; letter-spacing: 0.01em; color: var(--ink); white-space: nowrap; }
 .nav__brand span { color: var(--accent); }
 .nav__links { position: relative; display: flex; gap: 4px; flex-wrap: wrap; margin-left: auto; }
@@ -252,7 +264,7 @@ img, svg, canvas { display: block; max-width: 100%; }
   padding: 9px 16px; font-size: 0.9rem; cursor: pointer;
   transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.15s ease;
 }
-.btn:hover { background: rgba(255, 255, 255, 0.09); border-color: rgba(255, 255, 255, 0.24); }
+.btn:hover { background: var(--hover-2); border-color: var(--line-2); }
 .btn:active { transform: scale(0.98); }
 .btn--primary { background: var(--accent); border-color: transparent; color: #140e24; font-weight: 600; }
 .btn--primary:hover { background: #b9a5fb; }
@@ -277,7 +289,7 @@ img, svg, canvas { display: block; max-width: 100%; }
   padding: 10px 12px; border-radius: var(--r-sm); cursor: pointer;
   font-size: 0.94rem; color: var(--ink-2);
 }
-.qq-results li:hover, .qq-results li:focus-visible { background: rgba(255, 255, 255, 0.05); color: var(--ink); outline: none; }
+.qq-results li:hover, .qq-results li:focus-visible { background: var(--hover); color: var(--ink); outline: none; }
 .qq-results li span:first-child { color: var(--muted-2); font-family: var(--mono); font-size: 0.8rem; width: 1.4rem; flex: none; }
 .qq-results b { font-weight: 600; color: var(--ink); }
 .qq-results span span { color: var(--muted); font-size: 0.86rem; }
@@ -412,7 +424,7 @@ img, svg, canvas { display: block; max-width: 100%; }
   display: flex; align-items: baseline; gap: 10px;
   padding: 7px 8px; border-radius: 8px; font-size: 0.86rem; color: var(--ink-2);
 }
-.plan__row:hover { background: rgba(255, 255, 255, 0.03); }
+.plan__row:hover { background: var(--hover); }
 .plan__row input { flex: none; width: 15px; height: 15px; accent-color: #a78bfa; cursor: pointer; }
 .plan__row label { display: flex; gap: 10px; align-items: baseline; cursor: pointer; flex: 1; min-width: 0; }
 .plan__date { flex: none; width: 4.4rem; font-family: var(--mono); font-size: 0.76rem; color: var(--muted-2); }
@@ -546,7 +558,7 @@ img, svg, canvas { display: block; max-width: 100%; }
 .watch {
   position: relative; display: grid; gap: 1px;
   padding: 12px 13px 11px; border-radius: 12px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+  background: linear-gradient(180deg, var(--hover), rgba(255, 255, 255, 0.012));
   border: 1px solid var(--line);
 }
 .watch--added { border-color: rgba(167, 139, 250, 0.28); }
@@ -648,7 +660,7 @@ img, svg, canvas { display: block; max-width: 100%; }
 table { width: 100%; border-collapse: collapse; margin-top: 14px; }
 thead th { text-align: left; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted-2); padding: 0 8px 8px; }
 tbody td { padding: 11px 8px; border-top: 1px solid var(--line); font-size: 0.92rem; color: var(--ink-2); }
-tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+tbody tr:hover { background: var(--hover); }
 td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 td.num.pos { color: var(--good); }
 td.num.neg { color: var(--muted); }
@@ -658,6 +670,168 @@ td.num.neg { color: var(--muted); }
 #sky {
   position: fixed; inset: 0; width: 100%; height: 100%;
   z-index: 0; pointer-events: none;
+}
+
+
+/* ---------- light ----------
+   Same variable names, different values, so no component has to know which
+   mode is on. Text colours are chosen for AA contrast on paper. */
+[data-theme="light"] {
+  --bg: #f7f6f3;
+  --panel: #ffffff;
+  --panel-2: #f2f1ee;
+  --line: rgba(16, 18, 27, 0.10);
+  --line-2: rgba(16, 18, 27, 0.18);
+  --hover: rgba(16, 18, 27, 0.04);
+  --hover-2: rgba(16, 18, 27, 0.07);
+  --ink: #14161d;
+  --ink-2: rgba(20, 22, 29, 0.78);
+  --muted: rgba(20, 22, 29, 0.58);
+  --muted-2: rgba(20, 22, 29, 0.50);
+  --accent: #6d3ff2;
+  --accent-2: #0d7f96;
+  --good: #15803d;
+  --warn: #a16207;
+  --bad: #b91c1c;
+  --glow-a: rgba(109, 63, 242, 0.10);
+  --glow-b: rgba(13, 127, 150, 0.07);
+  --nav-a: rgba(247, 246, 243, 0.96);
+  --nav-b: rgba(247, 246, 243, 0.86);
+  --nav-c: rgba(247, 246, 243, 0.46);
+  --nav-d: rgba(247, 246, 243, 0);
+}
+
+[data-theme="light"] .nav__ink {
+  background: linear-gradient(180deg, rgba(16, 18, 27, 0.10), rgba(16, 18, 27, 0.04));
+  border-color: rgba(16, 18, 27, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 2px 8px rgba(16, 18, 27, 0.06);
+}
+
+/* every surface changes mode with the same timing */
+body, .nav, .panel, .card, .metric, .rail__block, .watch, .stat,
+.subject, .project, .swatch, .btn, .input, select, .flash, .cw {
+  transition: background-color 0.28s ease, border-color 0.28s ease, color 0.28s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body, .nav, .panel, .card, .metric, .rail__block, .watch, .stat,
+  .subject, .project, .swatch, .btn, .input, select, .flash, .cw {
+    transition: none;
+  }
+}
+
+
+/* ---------- home: asymmetric dashboard ----------
+   One huge number anchors the page, supporting figures sit in a compact
+   three-cell grid, and everything else lives in a narrow rail on the right.
+   The rail is a separate column, not a card row, so the eye reads down it. */
+.desk {
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(18rem, 1fr);
+  gap: clamp(20px, 3vw, 44px);
+  padding: clamp(28px, 4vw, 56px) 0 72px;
+  align-items: start;
+}
+.desk__main { display: grid; gap: clamp(20px, 2.4vw, 34px); min-width: 0; }
+.desk__rail { display: grid; gap: 16px; align-content: start; }
+
+.desk__greet {
+  font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted-2); margin: 0;
+}
+
+/* the anchor: the clock, at a size nothing else competes with */
+.anchor { display: grid; gap: 8px; }
+.anchor__value {
+  display: flex; align-items: baseline;
+  font-size: clamp(3.4rem, 9vw, 6.6rem); line-height: 0.92;
+  font-weight: 700; letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.anchor__value .ct__col { width: 0.58em; height: 1em; }
+.anchor__value .ct__sep {
+  font-size: 0.52em; line-height: 1; padding: 0 0.06em;
+  color: var(--muted-2); transform: translateY(-0.16em);
+}
+.anchor__meta {
+  display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  font-size: 0.95rem; color: var(--muted);
+}
+.anchor__meta b { color: var(--ink-2); font-weight: 600; }
+.anchor__meta .dot { color: var(--muted-2); }
+
+/* supporting figures: three tight cells, number first */
+.metrics {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.metric {
+  display: grid; gap: 6px; align-content: start;
+  padding: 14px 16px 16px; border-radius: 14px;
+  background: var(--panel); border: 1px solid var(--line);
+  color: var(--ink); text-decoration: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.metric:hover { border-color: var(--line-2); background: var(--panel-2); color: var(--ink); }
+.metric__label {
+  font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted-2);
+}
+.metric__value {
+  font-size: clamp(1.5rem, 2.6vw, 2rem); font-weight: 650;
+  letter-spacing: -0.02em; line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.metric__note { font-size: 0.74rem; color: var(--muted); }
+.metric__track {
+  height: 3px; border-radius: 999px; background: var(--line);
+  overflow: hidden; margin-top: 2px;
+}
+.metric__track i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+
+.nextup {
+  font-size: 0.86rem; color: var(--muted);
+  padding-top: 2px; border-top: 1px solid var(--line);
+  margin-top: 2px;
+}
+
+/* the rail */
+.rail__block {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 16px; padding: 16px 16px 14px;
+}
+.rail__block h2 {
+  font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted-2); margin-bottom: 10px; font-weight: 600;
+}
+.rail__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.rail__list a {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 8px 8px; border-radius: 9px;
+  color: var(--ink-2); font-size: 0.9rem;
+}
+.rail__list a:hover { background: var(--hover); color: var(--ink); }
+.rail__list a span { margin-left: auto; font-size: 0.72rem; color: var(--muted-2); }
+
+.modeswitch { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); }
+.modeswitch button {
+  border: 0; background: transparent; color: var(--muted);
+  padding: 7px 10px; border-radius: 999px; font-size: 0.8rem; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+.modeswitch button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18); }
+.modeswitch svg { width: 14px; height: 14px; }
+
+.rail__note { font-size: 0.74rem; color: var(--muted-2); line-height: 1.45; }
+
+@media (max-width: 980px) {
+  .desk { grid-template-columns: minmax(0, 1fr); }
+  .desk__rail { order: 2; }
+}
+@media (max-width: 680px) {
+  .metrics { grid-template-columns: minmax(0, 1fr); }
+  .anchor__value { font-size: clamp(3rem, 16vw, 4.6rem); }
 }
 
 /* ---- tarot ---- */
@@ -790,8 +964,8 @@ td.num.neg { color: var(--muted); }
   background: transparent; padding: 10px 12px; cursor: pointer;
   transition: border-color 0.18s ease, background-color 0.18s ease;
 }
-.swatch:hover { border-color: var(--line-2); background: rgba(255, 255, 255, 0.03); }
-.swatch.is-active { border-color: var(--accent); background: rgba(255, 255, 255, 0.04); }
+.swatch:hover { border-color: var(--line-2); background: var(--hover); }
+.swatch.is-active { border-color: var(--accent); background: var(--hover); }
 .swatch__chip {
   width: 34px; height: 34px; border-radius: 50%;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 2px 8px rgba(0, 0, 0, 0.4);

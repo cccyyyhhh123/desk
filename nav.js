@@ -114,3 +114,38 @@
     })
     .catch(function () { /* offline: keep what is on screen */ });
 })();
+/* ---------- light / dark ----------
+ * One control, on every page, because the theme is a property of the site and
+ * not of one screen. theme.js has already set the attribute in <head>, so this
+ * only has to reflect the current mode and flip it.
+ */
+(function () {
+  var nav = document.querySelector('.nav');
+  if (!nav) return;
+
+  var button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'nav__mode';
+
+  var SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.2M12 19.8V22M2 12h2.2M19.8 12H22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M19.1 4.9l-1.6 1.6M6.5 17.5l-1.6 1.6"/></svg>';
+  var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5z"/></svg>';
+
+  function reflect(mode) {
+    var light = mode === 'light';
+    button.innerHTML = light ? MOON : SUN;
+    button.setAttribute('aria-label', light ? 'Switch to dark' : 'Switch to light');
+    button.title = light ? 'Dark' : 'Light';
+  }
+
+  var start = (window.DeskTheme && window.DeskTheme.mode) ? window.DeskTheme.mode() : 'dark';
+  reflect(start);
+
+  button.addEventListener('click', function () {
+    var next = (document.documentElement.getAttribute('data-theme') === 'light') ? 'dark' : 'light';
+    if (window.DeskTheme) next = window.DeskTheme.setMode(next);
+    else document.documentElement.setAttribute('data-theme', next);
+    reflect(next);
+  });
+
+  nav.appendChild(button);
+})();

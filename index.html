@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Yuhan's Desk</title>
-<meta name="description" content="Five small tools on one desk: music, revision cards, a clock, a shared ledger and a tarot draw.">
+<meta name="description" content="One desk: music, revision cards, a clock, live weather, a shared ledger and a tarot spread.">
 <link rel="icon" href="Images/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="Images/icon-180.png">
 <meta name="theme-color" content="#0b0b10">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="theme.js?v=26"></script>
-<link rel="stylesheet" href="style.css?v=26">
+<link rel="stylesheet" href="style.css?v=29">
+<script src="theme.js?v=29"></script>
 </head>
 <body>
 
@@ -29,121 +29,105 @@
   </div>
 </nav>
 
-<main class="shell">
-  <section class="hero">
-    <p class="hero__eyebrow" id="greeting">Good evening</p>
-    <h1>Six small things,<br>on <em>one desk</em>.</h1>
+<main class="shell desk">
+  <section class="desk__main">
+    <p class="desk__greet" id="greeting">Good afternoon</p>
+
+    <div class="anchor">
+      <p class="anchor__value">
+        <span id="hourTiles"></span><span class="ct__sep" aria-hidden="true">:</span><span id="minTiles"></span>
+      </p>
+      <p class="anchor__meta">
+        <b id="stripDate">—</b>
+        <span class="dot">·</span>
+        <span id="stripTemp">—</span>
+        <span class="dot">·</span>
+        <span>Danzhou</span>
+      </p>
+    </div>
+
     <figure class="affirm">
       <blockquote class="affirm__line" id="affirmLine">—</blockquote>
       <figcaption class="affirm__cn" id="affirmCn">今日肯定语</figcaption>
       <button class="affirm__next" id="affirmNext" type="button">another ↻</button>
     </figure>
 
-    <dl class="strip" id="strip">
-      <div><dt>Today</dt><dd id="stripDate">—</dd></div>
-            <div>
-        <dt>Now</dt>
-        <dd class="strip__clock">
-          <span class="tc">
-            <span class="tc__group">
-              <span class="tc__tiles" id="hourTiles"></span>
-              <span class="tc__label">Hours</span>
-            </span>
-            <span class="tc__sep" aria-hidden="true">:</span>
-            <span class="tc__group">
-              <span class="tc__tiles" id="minTiles"></span>
-              <span class="tc__label">Minutes</span>
-            </span>
-          </span>
-        </dd>
-      </div>
-      <div><dt>Danzhou</dt><dd id="stripTemp">—</dd></div>
-    </dl>
-  </section>
-
-  <section class="cards">
-    <a class="card" href="music.html">
-      <span class="card__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 18V5l10-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span>
-      <h2>Music</h2>
-      <p>Search QQ Music by song name and play it right there — the player appears once you pick a track.</p>
-      <span class="card__meta">QQ 音乐 · 搜索即播</span>
-    </a>
-
-    <a class="card" href="study.html">
-      <span class="card__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18M8 18v3M16 18v3"/></svg></span>
-      <h2>Study</h2>
-      <p>Flash cards for Programming III, Statistics, Data Analytics and Web Technologies — flip, mark, repeat.</p>
-      <span class="card__meta">4 subjects · 32 cards</span>
-    </a>
-
-    <a class="card" href="clock.html">
-      <span class="card__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>
-      <h2>Clock</h2>
-      <p>Hands made of hanging ropes that swing into place, plus a countdown with presets from one minute to an hour.</p>
-      <span class="card__meta">clock · countdown presets</span>
-    </a>
-
-    <a class="card" href="weather.html">
-      <span class="card__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17h10a3.5 3.5 0 0 0 .3-6.98A5.2 5.2 0 0 0 8.2 11.4 3.2 3.2 0 0 0 7 17z"/><path d="M12 3v2M4.5 5.5l1.4 1.4"/></svg></span>
-      <h2>Weather</h2>
-      <p>Live conditions in Danzhou: now, the next twelve hours, and the week ahead.</p>
-      <span class="card__meta">open-meteo · updates every 10 min</span>
-    </a>
-
-    <a class="card" href="ledger.html">
-      <span class="card__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19v18H6.5A2.5 2.5 0 0 1 4 18.5z"/><path d="M8 8h7M8 12h5"/></svg></span>
-      <h2>Ledger</h2>
-      <p>The shared expense book: one key, one balance, entries kept in this browser.</p>
-      <span class="card__meta">localStorage · 六位 key</span>
-    </a>
-
-    <a class="card" href="tarot.html">
-      <span class="card__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="8.5"/></svg></span>
-      <h2>Tarot</h2>
-      <p>Draw three cards — past, present, future — from the twenty-two major arcana.</p>
-      <span class="card__meta">22 cards · 3-card spread</span>
-    </a>
-
-
-  </section>
-  <section class="panel" style="margin-bottom:64px">
-    <h2>How this is built</h2>
-    <p class="small muted" style="margin-top:6px">
-      Six pages of hand-written HTML, one stylesheet, one small script per page — no framework and
-      no build step. Every tool keeps its own state in this browser: the ledger and the study
-      progress in <code>localStorage</code>, the music list only while the tab is open, the tarot
-      draw just to fill the strip above. Nothing is uploaded anywhere.
-    </p>
-  </section>  <section class="panel appearance">
-    <div class="row" style="justify-content:space-between; align-items:flex-start; gap:16px">
-      <div style="max-width:34rem">
-        <h2>Appearance</h2>
-        <p class="hint small" style="margin-bottom:0">
-          A page cannot read your desktop wallpaper, so pick the picture here: the colours are
-          taken from it and knocked down into a dark palette. Or choose one of the five below.
-          Either way it is kept in this browser and applies to every page.
-        </p>
-      </div>
-      <div class="row" style="gap:8px">
-        <label class="btn btn--primary" for="wallpaper">Match my wallpaper</label>
-        <input id="wallpaper" type="file" accept="image/*" hidden>
-        <button class="btn btn--ghost" id="themeReset" type="button">Reset</button>
-      </div>
+    <div class="metrics">
+      <a class="metric" href="ledger.html">
+        <span class="metric__label">Ledger balance</span>
+        <span class="metric__value" id="metricBalance">—</span>
+        <span class="metric__note" id="metricLedgerNote">no book yet</span>
+      </a>
+      <a class="metric" href="study.html">
+        <span class="metric__label">Cards known</span>
+        <span class="metric__value" id="metricCards">—</span>
+        <span class="metric__track"><i id="metricCardsBar" style="width:0%"></i></span>
+      </a>
+      <a class="metric" href="tarot.html">
+        <span class="metric__label">Mindful today</span>
+        <span class="metric__value" id="metricMindful">—</span>
+        <span class="metric__note">breathing rounds</span>
+      </a>
     </div>
 
-    <div class="swatches" id="swatches"></div>
-    <p class="small muted" id="themeStatus" role="status" aria-live="polite" style="margin-top:6px"></p>
+    <p class="nextup" id="nextExam">—</p>
   </section>
+
+  <aside class="desk__rail">
+    <div class="rail__block">
+      <h2>On the desk</h2>
+      <ul class="rail__list">
+        <li><a href="music.html">Music <span>QQ</span></a></li>
+        <li><a href="study.html">Study <span>4 courses</span></a></li>
+        <li><a href="clock.html">Clock <span>countdown</span></a></li>
+        <li><a href="weather.html">Weather <span>live</span></a></li>
+        <li><a href="ledger.html">Ledger <span>shared</span></a></li>
+        <li><a href="tarot.html">Tarot <span>3 cards</span></a></li>
+      </ul>
+    </div>
+
+    <div class="rail__block">
+      <h2>Appearance</h2>
+      <div class="swatches" id="swatches"></div>
+      <div class="row" style="gap:8px; margin-top:12px; flex-wrap:wrap">
+        <label class="btn btn--primary" for="wallpaper" style="padding:7px 12px; font-size:0.8rem">Match wallpaper</label>
+        <input id="wallpaper" type="file" accept="image/*" hidden>
+        <button class="btn btn--ghost" id="themeReset" type="button" style="padding:7px 12px; font-size:0.8rem">Reset</button>
+      </div>
+      <p class="rail__note" id="themeStatus" role="status" aria-live="polite" style="margin-top:8px">
+        Colours are kept in this browser and apply to every page.
+      </p>
+    </div>
+  </aside>
 </main>
-<script src="counter.js?v=21"></script>
-<script src="nav.js?v=21"></script>
+
+<script src="counter.js?v=29"></script>
+<script src="nav.js?v=29"></script>
 <script>
   (function () {
     var hour = new Date().getHours();
-    var text = hour < 5 ? 'Still up' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    document.getElementById('greeting').textContent = text;
+    var greeting = hour < 5 ? 'Still up' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('greeting').textContent = greeting;
 
-    /* one affirmation a day, chosen by the date so it is the same all day */
+    /* ---------- the anchor: the clock ---------- */
+    var hourHost = document.getElementById('hourTiles');
+    var minHost = document.getElementById('minTiles');
+    var hours = (window.Counter && hourHost) ? window.Counter.mount(hourHost, { digits: 2 }) : null;
+    var minutes = (window.Counter && minHost) ? window.Counter.mount(minHost, { digits: 2 }) : null;
+
+    var dateEl = document.getElementById('stripDate');
+    function tick() {
+      var now = new Date();
+      dateEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+      var hh = String(now.getHours()).padStart(2, '0');
+      var mm = String(now.getMinutes()).padStart(2, '0');
+      if (hours && minutes) { hours.set(hh); minutes.set(mm); }
+      else if (hourHost && minHost) { hourHost.textContent = hh; minHost.textContent = mm; }
+    }
+    tick();
+    setInterval(tick, 1000);
+
+    /* ---------- the affirmation of the day ---------- */
     var AFFIRMATIONS = [
       { en: 'Slow is smooth, and smooth is fast.', cn: '慢就是稳，稳就是快。' },
       { en: 'You do not have to feel ready to begin.', cn: '不必准备好了才开始。' },
@@ -178,36 +162,80 @@
       });
     }
 
-    var dateEl = document.getElementById('stripDate');
-    var hourHost = document.getElementById('hourTiles');
-    var minHost = document.getElementById('minTiles');
-    var tempEl = document.getElementById('stripTemp');
-
-    /* two rolling counters: hours and minutes, one rounded tile per digit */
-    var hours = (window.Counter && hourHost)
-      ? window.Counter.mount(hourHost, { digits: 2, tile: true, label: 'Hours' }) : null;
-    var minutes = (window.Counter && minHost)
-      ? window.Counter.mount(minHost, { digits: 2, tile: true, label: 'Minutes' }) : null;
-
-    function tick() {
-      var now = new Date();
-      dateEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-
-      var hh = String(now.getHours()).padStart(2, '0');
-      var mm = String(now.getMinutes()).padStart(2, '0');
-
-      if (hours && minutes) {
-        hours.set(hh);
-        minutes.set(mm);
-      } else if (hourHost && minHost) {
-        hourHost.textContent = hh;
-        minHost.textContent = mm;
-      }
+    /* ---------- the supporting figures ---------- */
+    function num(value, digits) {
+      return Number(value).toLocaleString('en-US', {
+        minimumFractionDigits: digits || 0, maximumFractionDigits: digits || 0
+      });
     }
-    tick();
-    setInterval(tick, 1000);
 
-    /* the temperature, from the same source the weather page reads */
+    try {
+      var books = JSON.parse(localStorage.getItem('shareBillStorage')) || {};
+      var total = 0, entries = 0;
+      Object.keys(books).forEach(function (key) {
+        (books[key] || []).forEach(function (entry) {
+          entries += 1;
+          total += entry.type === 'deposit' ? Number(entry.money) : -Number(entry.money);
+        });
+      });
+      document.getElementById('metricBalance').textContent = num(total, 2);
+      document.getElementById('metricLedgerNote').textContent = entries
+        ? entries + (entries === 1 ? ' entry' : ' entries') : 'no entries yet';
+    } catch (e) {
+      document.getElementById('metricBalance').textContent = '—';
+    }
+
+    try {
+      var progress = JSON.parse(localStorage.getItem('deskStudyProgress')) || {};
+      var known = 0;
+      Object.keys(progress).forEach(function (id) { if (progress[id] === 'known') known += 1; });
+      document.getElementById('metricCards').textContent = known + ' / 32';
+      document.getElementById('metricCardsBar').style.width = (known / 32 * 100).toFixed(1) + '%';
+    } catch (e) {
+      document.getElementById('metricCards').textContent = '0 / 32';
+    }
+
+    try {
+      var mindful = JSON.parse(localStorage.getItem('deskMindful')) || null;
+      var today = new Date().toISOString().slice(0, 10);
+      var rounds = mindful && mindful.date === today ? Number(mindful.rounds) || 0 : 0;
+      document.getElementById('metricMindful').textContent = rounds ? String(rounds) : '0';
+    } catch (e) {
+      document.getElementById('metricMindful').textContent = '0';
+    }
+
+
+    /* ---------- what is coming ---------- */
+    var EXAMS = [
+      { name: 'Web Technologies', date: '2026-11-20', href: 'study.html' },
+      { name: 'Programming III', date: '2026-11-23', href: 'study.html' },
+      { name: 'Statistics', date: '2026-11-24', href: 'study.html' },
+      { name: 'Data Analytics & ML', date: '2026-11-25', href: 'study.html' }
+    ];
+
+    (function () {
+      var target = document.getElementById('nextExam');
+      if (!target) return;
+
+      var today = new Date();
+      today.setHours(0, 0, 0, 0);
+      var upcoming = EXAMS.map(function (exam) {
+        var date = new Date(exam.date + 'T00:00:00');
+        return { name: exam.name, days: Math.round((date - today) / 86400000) };
+      }).filter(function (exam) { return exam.days >= 0; })
+        .sort(function (a, b) { return a.days - b.days; });
+
+      if (!upcoming.length) {
+        target.textContent = 'No exam dates left in this term.';
+        return;
+      }
+      var next = upcoming[0];
+      target.textContent = 'Next exam · ' + next.name + ' · ' +
+        (next.days === 0 ? 'today' : next.days === 1 ? 'tomorrow' : 'in ' + next.days + ' days');
+    })();
+
+    /* ---------- temperature ---------- */
+    var tempEl = document.getElementById('stripTemp');
     var CONDITIONS = [
       [0, 'clear'], [2, 'mostly clear'], [3, 'overcast'], [48, 'fog'], [57, 'drizzle'],
       [67, 'rain'], [77, 'snow'], [82, 'showers'], [86, 'snow showers'], [99, 'storm']
@@ -218,7 +246,6 @@
       }
       return '';
     }
-
     function loadTemp() {
       fetch('https://api.open-meteo.com/v1/forecast?latitude=19.52&longitude=109.57' +
             '&current=temperature_2m,weather_code&timezone=Asia%2FShanghai', { cache: 'no-store' })
@@ -228,82 +255,74 @@
         })
         .then(function (data) {
           var now = data.current;
-          tempEl.textContent = Math.round(now.temperature_2m) + '°';
-          var tail = document.createElement('span');
-          tail.className = 'strip__tail';
-          tail.textContent = ' · ' + condition(now.weather_code);
-          tempEl.appendChild(tail);
+          tempEl.textContent = Math.round(now.temperature_2m) + '° ' + condition(now.weather_code);
         })
         .catch(function () {
-          if (!tempEl.textContent || tempEl.textContent === '—') tempEl.textContent = 'offline';
+          if (!tempEl.textContent || tempEl.textContent === '—') tempEl.textContent = 'weather offline';
         });
     }
     loadTemp();
     setInterval(loadTemp, 10 * 60 * 1000);
-  })();
-</script>
 
-<script>
-  (function () {
-    if (!window.DeskTheme) return;
+    /* ---------- appearance ---------- */
+    if (window.DeskTheme) {
+      var swatches = document.getElementById('swatches');
+      var status = document.getElementById('themeStatus');
+      var input = document.getElementById('wallpaper');
 
-    var swatches = document.getElementById('swatches');
-    var status = document.getElementById('themeStatus');
-    var input = document.getElementById('wallpaper');
+      function paintSwatches(activeKey) {
+        swatches.replaceChildren();
+        Object.keys(DeskTheme.PRESETS).forEach(function (key) {
+          var preset = DeskTheme.PRESETS[key];
+          var button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'swatch' + (key === activeKey ? ' is-active' : '');
+          button.setAttribute('aria-pressed', String(key === activeKey));
+          button.title = preset.name;
 
-    function paintSwatches(activeKey) {
-      swatches.replaceChildren();
-      Object.keys(DeskTheme.PRESETS).forEach(function (key) {
-        var preset = DeskTheme.PRESETS[key];
-        var button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'swatch' + (key === activeKey ? ' is-active' : '');
-        button.setAttribute('aria-pressed', String(key === activeKey));
-        button.title = preset.name;
+          var chip = document.createElement('span');
+          chip.className = 'swatch__chip';
+          chip.style.background = 'linear-gradient(135deg, ' + preset.accent + ', ' + preset.accent2 + ')';
 
-        var chip = document.createElement('span');
-        chip.className = 'swatch__chip';
-        chip.style.background = 'linear-gradient(135deg, ' + preset.accent + ', ' + preset.accent2 + ')';
+          var label = document.createElement('span');
+          label.className = 'swatch__name';
+          label.textContent = preset.name;
 
-        var label = document.createElement('span');
-        label.className = 'swatch__name';
-        label.textContent = preset.name;
-
-        button.append(chip, label);
-        button.addEventListener('click', function () {
-          DeskTheme.save(DeskTheme.preset(key));
-          paintSwatches(key);
-          status.textContent = preset.name + ' applied.';
+          button.append(chip, label);
+          button.addEventListener('click', function () {
+            DeskTheme.save(DeskTheme.preset(key));
+            paintSwatches(key);
+            status.textContent = preset.name + ' applied.';
+          });
+          swatches.appendChild(button);
         });
-        swatches.appendChild(button);
-      });
-    }
+      }
+      paintSwatches(null);
 
-    paintSwatches((DeskTheme.currentKey && DeskTheme.currentKey()) || null);
+      if (input) {
+        input.addEventListener('change', function () {
+          var file = input.files && input.files[0];
+          if (!file) return;
+          status.textContent = 'Reading the colours…';
+          DeskTheme.extract(file).then(function (theme) {
+            DeskTheme.save(theme);
+            paintSwatches(null);
+            status.textContent = 'Palette taken from ' + file.name + '.';
+          }).catch(function () {
+            status.textContent = 'That image could not be read.';
+          });
+          input.value = '';
+        });
+      }
 
-    if (input) {
-      input.addEventListener('change', function () {
-        var file = input.files && input.files[0];
-        if (!file) return;
-        status.textContent = 'Reading the colours…';
-        DeskTheme.extract(file).then(function (theme) {
-          DeskTheme.save(theme);
+      var reset = document.getElementById('themeReset');
+      if (reset) {
+        reset.addEventListener('click', function () {
+          DeskTheme.clear();
           paintSwatches(null);
-          status.textContent = 'Palette taken from ' + file.name + '.';
-        }).catch(function () {
-          status.textContent = 'That image could not be read.';
+          status.textContent = 'Back to the default palette.';
         });
-        input.value = '';
-      });
-    }
-
-    var reset = document.getElementById('themeReset');
-    if (reset) {
-      reset.addEventListener('click', function () {
-        DeskTheme.clear();
-        paintSwatches(null);
-        status.textContent = 'Back to the default violet.';
-      });
+      }
     }
   })();
 </script>
