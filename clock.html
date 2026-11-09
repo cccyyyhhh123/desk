@@ -82,6 +82,14 @@
       <span class="cw__chip cw__chip--wide" id="chipDate">—</span>
     </div>
   </section>
+
+  <section class="panel worldclock" id="worldPanel">
+    <div class="row" style="justify-content:space-between">
+      <h2>Elsewhere</h2>
+      <span class="small muted">the same moment, six places</span>
+    </div>
+    <div class="watches" id="watches"></div>
+  </section>
 </main>
 
 <script src="nav.js"></script>
@@ -205,6 +213,62 @@
     chips();
     setInterval(chips, 5000);
 
+    /* the other five cities — shown on the clock view only */
+    const CITIES = [
+      { name: 'Danzhou', zone: 'Asia/Shanghai', note: 'where I am' },
+      { name: 'Bielefeld', zone: 'Europe/Berlin', note: 'the university' },
+      { name: 'London', zone: 'Europe/London', note: 'UTC baseline' },
+      { name: 'New York', zone: 'America/New_York', note: 'the other side' },
+      { name: 'Tokyo', zone: 'Asia/Tokyo', note: 'one hour ahead of home' },
+      { name: 'Sydney', zone: 'Australia/Sydney', note: 'the far edge of the map' }
+    ];
+
+    const watches = document.getElementById('watches');
+    const localDay = function (zone) {
+      return new Date().toLocaleDateString('en-CA', { timeZone: zone });
+    };
+
+    CITIES.forEach(function (city) {
+      const row = document.createElement('div');
+      row.className = 'watch';
+
+      const name = document.createElement('b');
+      name.textContent = city.name;
+
+      const note = document.createElement('span');
+      note.textContent = city.note;
+
+      const day = document.createElement('i');
+      day.className = 'watch__day';
+      day.dataset.zone = city.zone;
+
+      const time = document.createElement('em');
+      time.dataset.zone = city.zone;
+
+      row.append(name, note, day, time);
+      watches.appendChild(row);
+    });
+
+    function paintCities() {
+      const now = new Date();
+      const here = localDay('Asia/Shanghai');
+      watches.querySelectorAll('em').forEach(function (time) {
+        const zone = time.dataset.zone;
+        time.textContent = now.toLocaleTimeString('en-GB', {
+          timeZone: zone, hour12: false, hour: '2-digit', minute: '2-digit'
+        });
+        const badge = time.parentElement.querySelector('.watch__day');
+        const there = localDay(zone);
+        if (there === here) {
+          badge.textContent = '';
+        } else {
+          badge.textContent = there > here ? '+1 day' : '−1 day';
+        }
+      });
+    }
+    paintCities();
+    setInterval(paintCities, 15000);
+
 
   })();
 
@@ -221,6 +285,8 @@
       tabTimer.setAttribute('aria-selected', String(!isClock));
       paneClock.hidden = !isClock;
       paneTimer.hidden = isClock;
+      const world = document.getElementById('worldPanel');
+      if (world) world.hidden = !isClock;
     }
     tabClock.addEventListener('click', function () { show('clock'); });
     tabTimer.addEventListener('click', function () { show('timer'); });

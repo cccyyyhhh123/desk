@@ -321,6 +321,22 @@ img, svg, canvas { display: block; max-width: 100%; }
 }
 .cw__mini:hover { color: #17171d; }
 
+.worldclock { max-width: 32rem; margin: 18px auto 0; }
+.watches { display: grid; gap: 8px; margin-top: 14px; }
+.watch {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 10px 12px; border-radius: var(--r-sm);
+  background: var(--panel-2); border: 1px solid var(--line);
+}
+.watch b { font-weight: 600; }
+.watch span { color: var(--muted-2); font-size: 0.8rem; }
+.watch__day {
+  margin-left: auto; font-style: normal; font-size: 0.7rem;
+  color: var(--warn); letter-spacing: 0.04em;
+}
+.watch em { margin-left: auto; font-style: normal; font-family: var(--mono); font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.watch__day:not(:empty) + em { margin-left: 10px; }
+
 .cw__presets { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 16px; }
 .cw__preset {
   border: 1px solid rgba(23, 23, 29, 0.14); background: rgba(255, 255, 255, 0.45);
