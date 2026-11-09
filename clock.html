@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Clock — Yuhan's Desk</title>
-<meta name="description" content="A clock widget, four world clocks and a 25/5 focus timer.">
+<meta name="description" content="A clock whose hands are hanging ropes, plus a countdown with presets.">
 <link rel="icon" href="Images/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="Images/icon-180.png">
 <meta name="theme-color" content="#0b0b10">
@@ -30,8 +30,8 @@
 <main class="shell tool">
   <header class="tool__head">
     <h1>Clock</h1>
-    <p>One widget, two jobs: the clock, or a countdown to whatever is next. Pick a length
-       from one minute to an hour and start it.</p>
+    <p>The hands are ropes, not sticks: they hang from the centre, sag in the middle and swing
+       into place with a little overshoot. The other half of the widget is a countdown.</p>
   </header>
 
   <section class="cw" aria-label="Clock widget">
@@ -41,26 +41,25 @@
     </div>
 
     <div class="cw__pane" id="paneClock" role="tabpanel" aria-labelledby="tabClock">
-      <svg class="cw__svg" viewBox="0 0 300 300" role="img" aria-label="Analogue clock">
+      <svg class="cw__svg" viewBox="0 0 300 300" role="img" aria-label="Clock">
         <g id="ticks"></g>
-        <text class="cw__num" x="150" y="54" text-anchor="middle" dominant-baseline="central">12</text>
-        <text class="cw__num" x="246" y="150" text-anchor="middle" dominant-baseline="central">3</text>
-        <text class="cw__num" x="150" y="246" text-anchor="middle" dominant-baseline="central">6</text>
-        <text class="cw__num" x="54" y="150" text-anchor="middle" dominant-baseline="central">9</text>
 
-        <g id="hourGroup">
-          <line id="hourHand" x1="150" y1="150" x2="150" y2="86" stroke="#17171d" stroke-width="9" stroke-linecap="round"/>
-          <circle id="hourDot" cx="150" cy="86" r="6.5" fill="#17171d"/>
-        </g>
-        <g id="minGroup">
-          <line id="minHand" x1="150" y1="150" x2="150" y2="54" stroke="#17171d" stroke-width="7" stroke-linecap="round"/>
-          <circle id="minDot" cx="150" cy="54" r="5" fill="#17171d"/>
-        </g>
-        <g id="secGroup">
-          <line id="secHand" x1="150" y1="170" x2="150" y2="38" stroke="#ff453a" stroke-width="3" stroke-linecap="round"/>
-          <circle id="secDot" cx="150" cy="38" r="4.5" fill="#ff453a"/>
-        </g>
-        <circle cx="150" cy="150" r="7" fill="#17171d"/>
+        <text class="cw__num" x="150" y="56" text-anchor="middle" dominant-baseline="central">12</text>
+        <text class="cw__num" x="244" y="150" text-anchor="middle" dominant-baseline="central">3</text>
+        <text class="cw__num" x="150" y="244" text-anchor="middle" dominant-baseline="central">6</text>
+        <text class="cw__num" x="56" y="150" text-anchor="middle" dominant-baseline="central">9</text>
+
+        <!-- three hanging ropes, drawn from the centre to a bead at their end -->
+        <path id="hourPath" fill="none" stroke="#111114" stroke-width="5.5" stroke-linecap="round"/>
+        <path id="minPath" fill="none" stroke="#111114" stroke-width="4" stroke-linecap="round"/>
+        <path id="secPath" fill="none" stroke="#a8382c" stroke-width="2.4" stroke-linecap="round"/>
+
+        <circle id="hourBead" r="7" fill="#111114"/>
+        <circle id="minBead" r="6" fill="#111114"/>
+        <circle id="secBead" r="4.5" fill="#a8382c"/>
+
+        <circle id="hub" cx="150" cy="150" r="8" fill="#111114"/>
+        <circle id="hubPin" cx="150" cy="150" r="3" fill="#3a3a45"/>
       </svg>
     </div>
 
@@ -80,13 +79,11 @@
       <span class="cw__chip cw__chip--wide" id="chipDate">—</span>
     </div>
   </section>
-
-
 </main>
 
 <script src="nav.js"></script>
 <script>
-  /* ---------- the ticks ---------- */
+  /* ---------- the dial ---------- */
   (function () {
     const ticks = document.getElementById('ticks');
     for (let i = 0; i < 60; i++) {
@@ -99,35 +96,114 @@
       line.setAttribute('y1', String(150 - Math.cos(angle) * r1));
       line.setAttribute('x2', String(150 + Math.sin(angle) * r2));
       line.setAttribute('y2', String(150 - Math.cos(angle) * r2));
-      line.setAttribute('stroke', major ? 'rgba(23,23,29,0.38)' : 'rgba(23,23,29,0.18)');
-      line.setAttribute('stroke-width', major ? '2.2' : '1.2');
+      line.setAttribute('stroke', major ? 'rgba(23,23,29,0.42)' : 'rgba(23,23,29,0.16)');
+      line.setAttribute('stroke-width', major ? '2.4' : '1.2');
       line.setAttribute('stroke-linecap', 'round');
       ticks.appendChild(line);
     }
   })();
 
-  /* ---------- the hands ---------- */
-  const hourGroup = document.getElementById('hourGroup');
-  const minGroup = document.getElementById('minGroup');
-  const secGroup = document.getElementById('secGroup');
-  const chipTime = document.getElementById('chipTime');
-  const chipDate = document.getElementById('chipDate');
+  /* ---------- rope hands ----------
+     Each hand is a hanging cord: its tip chases the clock angle on a spring,
+     so it swings past and settles back, and the middle of the cord bends
+     downwards — most when the cord is horizontal, not at all when vertical. */
+  (function () {
+    const CX = 150, CY = 150;
 
-  function paintClock() {
-    const now = new Date();
-    const s = now.getSeconds();
-    const m = now.getMinutes() + s / 60;
-    const h = (now.getHours() % 12) + m / 60;
+    const hands = [
+      { path: 'hourPath', bead: 'hourBead', len: 74,  k: 46, c: 8.4, sag: 0.15, angle: 0, vel: 0, target: 0 },
+      { path: 'minPath',  bead: 'minBead',  len: 108, k: 52, c: 8.8, sag: 0.13, angle: 0, vel: 0, target: 0 },
+      { path: 'secPath',  bead: 'secBead',  len: 118, k: 34, c: 6.2, sag: 0.10, angle: 0, vel: 0, target: 0 }
+    ];
 
-    hourGroup.setAttribute('transform', 'rotate(' + (h * 30) + ' 150 150)');
-    minGroup.setAttribute('transform', 'rotate(' + (m * 6) + ' 150 150)');
-    secGroup.setAttribute('transform', 'rotate(' + (s * 6) + ' 150 150)');
+    hands.forEach(function (hand) {
+      hand.pathEl = document.getElementById(hand.path);
+      hand.beadEl = document.getElementById(hand.bead);
+    });
 
-    chipTime.textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    chipDate.textContent = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', weekday: 'short' });
-  }
-  paintClock();
-  setInterval(paintClock, 1000);
+    function wrap(delta) {
+      while (delta > Math.PI) delta -= Math.PI * 2;
+      while (delta < -Math.PI) delta += Math.PI * 2;
+      return delta;
+    }
+
+    function draw(hand) {
+      const dirX = Math.sin(hand.angle);
+      const dirY = -Math.cos(hand.angle);
+
+      const tipX = CX + dirX * hand.len;
+      const tipY = CY + dirY * hand.len;
+
+      /* gravity's pull is what bends the cord, so the bow is the part of
+         gravity that is perpendicular to it: (sin·cos, sin²), which is zero
+         when the cord hangs straight down or points straight up */
+      const s = Math.sin(hand.angle);
+      const c = Math.cos(hand.angle);
+      const bow = hand.len * hand.sag;
+      const ctrlX = CX + dirX * hand.len * 0.5 + s * c * bow;
+      const ctrlY = CY + dirY * hand.len * 0.5 + s * s * bow;
+
+      hand.pathEl.setAttribute('d', 'M ' + CX + ' ' + CY + ' Q ' + ctrlX.toFixed(2) + ' ' +
+        ctrlY.toFixed(2) + ' ' + tipX.toFixed(2) + ' ' + tipY.toFixed(2));
+
+      hand.beadEl.setAttribute('cx', tipX.toFixed(2));
+      hand.beadEl.setAttribute('cy', tipY.toFixed(2));
+    }
+
+    function targets() {
+      const now = new Date();
+      const s = now.getSeconds() + now.getMilliseconds() / 1000;
+      const m = now.getMinutes() + s / 60;
+      const h = (now.getHours() % 12) + m / 60;
+      hands[0].target = (h / 12) * Math.PI * 2;
+      hands[1].target = (m / 60) * Math.PI * 2;
+      hands[2].target = (s / 60) * Math.PI * 2;
+    }
+
+    /* start slightly behind, so the first second is a small settle, not a spin */
+    targets();
+    hands.forEach(function (hand) { hand.angle = hand.target - 0.22; });
+
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let last = performance.now();
+    function frame(now) {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      targets();
+      hands.forEach(function (hand) {
+        const delta = wrap(hand.target - hand.angle);
+        hand.vel += (delta * hand.k - hand.vel * hand.c) * dt;
+        hand.angle += hand.vel * dt;
+        draw(hand);
+      });
+
+      requestAnimationFrame(frame);
+    }
+    if (reduce) {
+      /* still hands, updated once a second — no spring, no wobble */
+      setInterval(function () {
+        targets();
+        hands.forEach(function (hand) { hand.angle = hand.target; draw(hand); });
+      }, 1000);
+    } else {
+      requestAnimationFrame(frame);
+    }
+
+    /* the two chips */
+    const chipTime = document.getElementById('chipTime');
+    const chipDate = document.getElementById('chipDate');
+    function chips() {
+      const now = new Date();
+      chipTime.textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      chipDate.textContent = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', weekday: 'short' });
+    }
+    chips();
+    setInterval(chips, 5000);
+
+
+  })();
 
   /* ---------- clock / timer ---------- */
   (function () {
@@ -142,7 +218,6 @@
       tabTimer.setAttribute('aria-selected', String(!isClock));
       paneClock.hidden = !isClock;
       paneTimer.hidden = isClock;
-      document.querySelector('.cw').classList.toggle('is-timer', !isClock);
     }
     tabClock.addEventListener('click', function () { show('clock'); });
     tabTimer.addEventListener('click', function () { show('timer'); });
@@ -200,12 +275,12 @@
           left = 0;
           finished = true;
           stop();
-          document.title = 'Time is up — Yuhan\'s Desk';
+          document.title = "Time is up — Yuhan's Desk";
           return;
         }
         paint();
       }, 1000);
-      document.title = 'Clock — Yuhan\'s Desk';
+      document.title = "Clock — Yuhan's Desk";
       paint();
     }
 
