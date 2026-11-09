@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Study — Yuhan's Desk</title>
-<meta name="description" content="Flash cards for Programming III, Statistics, Data Analytics and Web Technologies. Flip, mark what you know, repeat what you do not.">
+<meta name="description" content="Revision cards for four courses, with per-course progress, exam dates and a short revision note for each.">
 <link rel="icon" href="Images/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="Images/icon-180.png">
 <meta name="theme-color" content="#0b0b10">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=3">
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 
@@ -31,7 +31,8 @@
   <header class="tool__head">
     <h1>Revision cards</h1>
     <p>Eight cards per course. Read the question, say the answer out loud, then flip.
-       Mark it known and it leaves the round; mark it again and it comes back at the end.</p>
+       Mark it known and it leaves the round; mark it again and it comes back at the end.
+       The numbers under each course are what is done and what is left.</p>
   </header>
 
   <section class="panel canvas-bar">
@@ -57,8 +58,31 @@
   </section>
 
   <section class="panel">
+    <div class="row" style="justify-content:space-between; margin-bottom:14px">
+      <div>
+        <h2>Where I am</h2>
+        <p class="hint small" style="margin-bottom:0">Tap a course to open its cards and its revision note.</p>
+      </div>
+      <p class="study-total" id="total">—</p>
+    </div>
+
     <div class="subjects" id="subjects" role="group" aria-label="Choose a subject"></div>
 
+    <div class="subject-note" id="subjectNote" hidden></div>
+  </section>
+
+  <section class="panel">
+    <div class="row" style="justify-content:space-between">
+      <div>
+        <h2>Exams</h2>
+        <p class="hint small" style="margin-bottom:0">Type a date as YYYY-MM-DD. It is kept in this
+          browser and counted down here.</p>
+      </div>
+    </div>
+    <div class="exams" id="exams"></div>
+  </section>
+
+  <section class="panel">
     <div class="row small" style="justify-content:space-between; margin-bottom:6px">
       <span class="muted" id="counter">—</span>
       <span class="muted" id="knownTotal">—</span>
@@ -81,20 +105,27 @@
         <span class="spacer"></span>
         <button class="btn btn--ghost" id="reset" type="button">Reset progress</button>
       </div>
-      <p class="small" style="margin-top:12px">
-        <a id="courseLink" href="https://learn.hibiuh.edu.cn/" target="_blank" rel="noopener">Open this course in Canvas ↗</a>
-      </p>
     </div>
   </section>
 </main>
 
-<script src="nav.js?v=3"></script>
+<script src="nav.js?v=4"></script>
 <script>
   const SUBJECTS = {
     cpp: {
       name: 'Programming III',
       code: 'C++',
       canvas: 'https://learn.hibiuh.edu.cn/courses/146',
+      note: {
+        first: 'Start with references and RAII — most of the rest hangs off those two ideas.',
+        points: [
+          'Passing by value copies; passing by reference writes back. Know which one a signature chooses.',
+          'RAII means a resource is owned by an object, so the destructor cleans up even through an exception.',
+          'const methods promise not to change the object; the compiler enforces the promise.',
+          'vector over raw arrays: it knows its size, grows safely and cleans up after itself.',
+          'virtual is dynamic dispatch through a base pointer; without it you get the base version.'
+        ]
+      },
       cards: [
         { q: 'What is the difference between passing by value and by reference?', a: 'By value copies the object, so the caller cannot see changes. By reference (&) binds to the caller\'s object, so writes go back to it — and it avoids a copy.' },
         { q: 'Why mark a method const?', a: 'A const method promises not to modify the object, so it can be called on a const object and it documents intent. The compiler enforces it.' },
@@ -110,6 +141,16 @@
       name: 'Statistics',
       code: 'MATH III',
       canvas: 'https://learn.hibiuh.edu.cn/courses/140',
+      note: {
+        first: 'The exam is mostly interpretation: a number without a sentence is worth half.',
+        points: [
+          'Mean is broken by outliers; median is not. Say which one a question is really asking about.',
+          'Know the 68–95–99.7 rule well enough to estimate without a calculator.',
+          'A p-value is the probability of data this extreme if the null were true — not the probability the null is true.',
+          'Confidence interval ≠ probability the parameter is inside it; it is about repeated samples.',
+          'Correlation is not causation — name the third variable before you claim anything.'
+        ]
+      },
       cards: [
         { q: 'Mean, median or mode — which one do outliers break?', a: 'The mean. The median only moves with rank, and the mode is unaffected by magnitude.' },
         { q: 'What does a standard deviation of 0 mean?', a: 'Every observation is identical to the mean — the sample has no spread.' },
@@ -125,6 +166,16 @@
       name: 'Data Analytics & ML',
       code: 'DA&ML',
       canvas: 'https://learn.hibiuh.edu.cn/courses/143',
+      note: {
+        first: 'Every question in this course is really "how do you know it generalises?"',
+        points: [
+          'Supervised has labels; unsupervised looks for structure. Say which one the question describes.',
+          'Train/test split exists to measure what the model does on data it has not seen.',
+          'Overfitting: training error falls while validation error rises.',
+          'Precision and recall trade off — pick the one the user of the model would care about.',
+          'Scale features before distance-based methods or gradient descent; units otherwise decide the answer.'
+        ]
+      },
       cards: [
         { q: 'Supervised versus unsupervised learning?', a: 'Supervised has labelled targets to predict; unsupervised looks for structure without labels (clustering, dimensionality reduction).' },
         { q: 'Why split into training and test sets?', a: 'To measure how the model behaves on data it has not seen — otherwise the score measures memorisation.' },
@@ -140,6 +191,16 @@
       name: 'Web Technologies',
       code: 'WEB',
       canvas: 'https://learn.hibiuh.edu.cn/courses/149',
+      note: {
+        first: 'This is the course where you have a live site — use it as your example in every answer.',
+        points: [
+          'Box model + box-sizing explains most "why is it 4px wider" questions.',
+          'Flex items refuse to shrink below their content unless min-width: 0.',
+          'Semantic elements describe role, not appearance — that is what the marker looks for.',
+          'Specificity: inline > id > class > element; !important overrides everything and should stay rare.',
+          'localStorage survives a closed tab, sessionStorage does not — pick deliberately.'
+        ]
+      },
       cards: [
         { q: 'Describe the CSS box model in one sentence.', a: 'Every element is a box of content plus padding plus border plus margin, and box-sizing decides whether width includes the first three.' },
         { q: 'When does a flex item overflow its container?', a: 'When its min-width is auto and its content cannot shrink — set min-width: 0 to let it shrink properly.' },
@@ -154,22 +215,29 @@
   };
 
   const STORE = 'deskStudyProgress';
+  const EXAM_STORE = 'deskExamDates';
 
-  function loadProgress() {
-    try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; }
+  function load(key) {
+    try { return JSON.parse(localStorage.getItem(key)) || {}; } catch (e) { return {}; }
   }
-  function saveProgress(p) {
-    try { localStorage.setItem(STORE, JSON.stringify(p)); } catch (e) {}
+  function save(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
   }
 
-  const progress = loadProgress();
+  const progress = load(STORE);
+  const examDates = load(EXAM_STORE);
+
   let current = 'cpp';
   let order = [];
   let cursor = 0;
   let flipped = false;
+  let noteOpen = true;
 
   const el = {
     subjects: document.getElementById('subjects'),
+    note: document.getElementById('subjectNote'),
+    exams: document.getElementById('exams'),
+    total: document.getElementById('total'),
     tag: document.getElementById('tag'),
     question: document.getElementById('question'),
     answer: document.getElementById('answer'),
@@ -185,30 +253,185 @@
 
   function cardId(subject, index) { return subject + ':' + index; }
 
+  function knownIn(key) {
+    return SUBJECTS[key].cards.filter(function (_, i) {
+      return progress[cardId(key, i)] === 'known';
+    }).length;
+  }
+
+  function totals() {
+    let known = 0;
+    let all = 0;
+    Object.keys(SUBJECTS).forEach(function (key) {
+      known += knownIn(key);
+      all += SUBJECTS[key].cards.length;
+    });
+    return { known: known, all: all, left: all - known };
+  }
+
+  /* ---------- the course tiles ---------- */
   function buildSubjects() {
     el.subjects.replaceChildren();
     Object.keys(SUBJECTS).forEach(function (key) {
       const subject = SUBJECTS[key];
       const total = subject.cards.length;
-      const known = subject.cards.filter(function (_, i) {
-        return progress[cardId(key, i)] === 'known';
-      }).length;
+      const known = knownIn(key);
+      const left = total - known;
 
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'subject';
       button.setAttribute('aria-pressed', String(key === current));
+
+      const head = document.createElement('span');
+      head.className = 'subject__head';
       const b = document.createElement('b');
       b.textContent = subject.name;
-      const s = document.createElement('span');
-      s.textContent = subject.code + ' · ' + known + '/' + total + ' known';
-      button.append(b, s);
-      button.addEventListener('click', function () { switchSubject(key); });
+      const chevron = document.createElement('span');
+      chevron.className = 'subject__chevron';
+      chevron.textContent = key === current && noteOpen ? '▾' : '▸';
+      head.append(b, chevron);
+
+      const meta = document.createElement('span');
+      meta.className = 'subject__meta';
+      meta.textContent = known + ' / ' + total + ' done · ' + left + ' to go';
+
+      const track = document.createElement('span');
+      track.className = 'subject__track';
+      const fill = document.createElement('i');
+      fill.style.width = (known / total * 100).toFixed(1) + '%';
+      track.appendChild(fill);
+
+      button.append(head, meta, track);
+      button.addEventListener('click', function () {
+        if (key === current) {
+          noteOpen = !noteOpen;
+          buildSubjects();
+          buildNote();
+        } else {
+          current = key;
+          noteOpen = true;
+          buildOrder();
+          buildSubjects();
+          buildNote();
+          render();
+        }
+      });
       el.subjects.appendChild(button);
+    });
+
+    const sum = totals();
+    el.total.textContent = sum.known + ' of ' + sum.all + ' cards known · ' + sum.left + ' to go';
+  }
+
+  /* ---------- the note that opens with a course ---------- */
+  function buildNote() {
+    if (!noteOpen) {
+      el.note.hidden = true;
+      el.note.replaceChildren();
+      return;
+    }
+    const subject = SUBJECTS[current];
+    el.note.replaceChildren();
+
+    const title = document.createElement('p');
+    title.className = 'subject-note__title';
+    title.textContent = subject.name + ' · what to revise first';
+
+    const lead = document.createElement('p');
+    lead.className = 'subject-note__lead';
+    lead.textContent = subject.note.first;
+
+    const list = document.createElement('ul');
+    subject.note.points.forEach(function (point) {
+      const li = document.createElement('li');
+      li.textContent = point;
+      list.appendChild(li);
+    });
+
+    const link = document.createElement('a');
+    link.className = 'subject-note__link';
+    link.href = subject.canvas;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = 'Open ' + subject.name + ' in Canvas ↗';
+
+    el.note.append(title, lead, list, link);
+    el.note.hidden = false;
+  }
+
+  /* ---------- exam dates ---------- */
+  function daysUntil(date) {
+    const target = new Date(date + 'T00:00:00');
+    if (isNaN(target)) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return Math.round((target - today) / 86400000);
+  }
+
+  function buildExams() {
+    el.exams.replaceChildren();
+    Object.keys(SUBJECTS).forEach(function (key) {
+      const subject = SUBJECTS[key];
+      const value = examDates[key] || '';
+
+      const row = document.createElement('div');
+      row.className = 'exam';
+
+      const name = document.createElement('span');
+      name.className = 'exam__name';
+      name.textContent = subject.name;
+
+      const input = document.createElement('input');
+      input.className = 'input exam__input';
+      input.type = 'text';
+      input.inputMode = 'numeric';
+      input.maxLength = 10;
+      input.placeholder = 'YYYY-MM-DD';
+      input.value = value;
+      input.setAttribute('aria-label', subject.name + ' exam date');
+
+      const when = document.createElement('span');
+      when.className = 'exam__when';
+
+      function paintWhen() {
+        const days = daysUntil(input.value.trim());
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(input.value.trim()) || days === null) {
+          when.textContent = 'no date set';
+          when.className = 'exam__when';
+          return;
+        }
+        if (days < 0) {
+          when.textContent = 'was ' + (-days) + ' days ago';
+          when.className = 'exam__when is-past';
+        } else if (days === 0) {
+          when.textContent = 'today';
+          when.className = 'exam__when is-soon';
+        } else if (days === 1) {
+          when.textContent = 'tomorrow';
+          when.className = 'exam__when is-soon';
+        } else {
+          when.textContent = 'in ' + days + ' days';
+          when.className = 'exam__when' + (days <= 7 ? ' is-soon' : '');
+        }
+      }
+
+      input.addEventListener('input', paintWhen);
+      input.addEventListener('change', function () {
+        const text = input.value.trim();
+        if (/^\d{4}-\d{2}-\d{2}$/.test(text)) examDates[key] = text;
+        else delete examDates[key];
+        save(EXAM_STORE, examDates);
+        paintWhen();
+      });
+
+      paintWhen();
+      row.append(name, input, when);
+      el.exams.appendChild(row);
     });
   }
 
-  /* start each subject with the cards you do not know yet, in a fresh order */
+  /* ---------- the deck ---------- */
   function buildOrder() {
     const subject = SUBJECTS[current];
     const unknown = [];
@@ -219,24 +442,16 @@
     unknown.sort(function () { return Math.random() - 0.5; });
     order = unknown.concat(known);
     cursor = 0;
-  }
-
-  function switchSubject(key) {
-    current = key;
-    buildOrder();
-    render();
-    buildSubjects();
+    flipped = false;
   }
 
   function render() {
     const subject = SUBJECTS[current];
     const total = subject.cards.length;
-    const known = subject.cards.filter(function (_, i) {
-      return progress[cardId(current, i)] === 'known';
-    }).length;
+    const known = knownIn(current);
 
     el.counter.textContent = (cursor + 1) + ' / ' + total + ' · ' + subject.name;
-    el.knownTotal.textContent = known + ' of ' + total + ' known';
+    el.knownTotal.textContent = known + ' of ' + total + ' known · ' + (total - known) + ' left';
     el.bar.style.width = (known / total * 100).toFixed(1) + '%';
 
     const index = order[cursor];
@@ -247,12 +462,6 @@
     el.answer.hidden = !flipped;
     el.flip.textContent = flipped ? 'Hide answer' : 'Show answer';
     el.card.setAttribute('aria-label', flipped ? 'Hide the answer' : 'Show the answer');
-
-    const link = document.getElementById('courseLink');
-    if (link) {
-      link.href = subject.canvas;
-      link.textContent = 'Open ' + subject.name + ' in Canvas ↗';
-    }
 
     const done = progress[cardId(current, index)] === 'known';
     el.known.disabled = false;
@@ -277,17 +486,15 @@
   el.flip.addEventListener('click', flip);
 
   el.known.addEventListener('click', function () {
-    const id = cardId(current, order[cursor]);
-    progress[id] = 'known';
-    saveProgress(progress);
+    progress[cardId(current, order[cursor])] = 'known';
+    save(STORE, progress);
     buildSubjects();
     advance();
   });
 
   el.again.addEventListener('click', function () {
-    const id = cardId(current, order[cursor]);
-    delete progress[id];
-    saveProgress(progress);
+    delete progress[cardId(current, order[cursor])];
+    save(STORE, progress);
     buildSubjects();
     advance();
   });
@@ -296,7 +503,7 @@
     Object.keys(progress).forEach(function (key) {
       if (key.indexOf(current + ':') === 0) delete progress[key];
     });
-    saveProgress(progress);
+    save(STORE, progress);
     buildOrder();
     buildSubjects();
     render();
@@ -311,6 +518,8 @@
   });
 
   buildSubjects();
+  buildNote();
+  buildExams();
   buildOrder();
   render();
 </script>
