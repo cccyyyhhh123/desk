@@ -86,3 +86,31 @@
     place(bar.querySelector('a[aria-current="page"]') || current, true);
   });
 })();
+/* ---------- stale page guard ----------
+ * GitHub Pages lets a browser keep an HTML page for ten minutes, which is
+ * long enough to be shown a page that no longer exists. Every page carries
+ * its build stamp; if the server disagrees, the page reloads once through a
+ * URL that has the build in the query, so the fetch cannot come from cache.
+ * The sessionStorage flag makes sure this happens at most once per build.
+ */
+(function () {
+  var build = window.__DESK_BUILD__;
+  if (!build) return;
+
+  fetch('version.json', { cache: 'no-store' })
+    .then(function (response) { return response.json(); })
+    .then(function (info) {
+      if (!info || !info.build || info.build === build) return;
+
+      var key = 'deskBuildReloaded';
+      try {
+        if (sessionStorage.getItem(key) === info.build) return;
+        sessionStorage.setItem(key, info.build);
+      } catch (e) { return; }
+
+      var url = new URL(window.location.href);
+      url.searchParams.set('v', info.build);
+      window.location.replace(url.toString());
+    })
+    .catch(function () { /* offline: keep what is on screen */ });
+})();
