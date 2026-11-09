@@ -129,24 +129,68 @@
     return theme;
   }
 
+  /* A palette carries a hue, not a mode. If the page is in light mode the same
+     palette has to be turned into a light one — otherwise a dark wallpaper
+     gives dark panels with dark text, and nothing is readable. */
   function apply(theme) {
     if (!theme || !theme.bg) return;
-    var root = document.documentElement;
 
-    root.style.setProperty('--bg', theme.bg);
-    root.style.setProperty('--panel', theme.panel);
-    root.style.setProperty('--panel-2', theme.panel2);
-    root.style.setProperty('--accent', theme.accent);
-    root.style.setProperty('--accent-2', theme.accent2);
-    if (theme.glowA) root.style.setProperty('--glow-a', theme.glowA);
-    if (theme.glowB) root.style.setProperty('--glow-b', theme.glowB);
-    if (theme.nav) {
-      root.style.setProperty('--nav-a', theme.nav[0]);
-      root.style.setProperty('--nav-b', theme.nav[1]);
-      root.style.setProperty('--nav-c', theme.nav[2]);
-      root.style.setProperty('--nav-d', theme.nav[3]);
+    var root = document.documentElement;
+    var light = root.getAttribute('data-theme') === 'light';
+
+    var bgHsl = rgbToHsl(hexToRgb(theme.bg));
+    var accentHsl = rgbToHsl(hexToRgb(theme.accent));
+    var accent2Hsl = rgbToHsl(hexToRgb(theme.accent2 || theme.accent));
+
+    var accent = theme.accent;
+    var accent2 = theme.accent2 || theme.accent;
+
+    if (light) {
+      /* paper, white cards, accents dark enough to read on white */
+      var paper = hslToHex(bgHsl.h, Math.min(0.24, bgHsl.s * 1.4), 0.965);
+      accent = hslToHex(accentHsl.h, Math.max(0.5, Math.min(0.8, accentHsl.s)), 0.44);
+      accent2 = hslToHex(accent2Hsl.h, Math.max(0.45, Math.min(0.75, accent2Hsl.s)), 0.42);
+
+      root.style.setProperty('--bg', paper);
+      root.style.setProperty('--panel', '#ffffff');
+      root.style.setProperty('--panel-2', hslToHex(bgHsl.h, Math.min(0.20, bgHsl.s), 0.945));
+      root.style.setProperty('--accent', accent);
+      root.style.setProperty('--accent-2', accent2);
+      root.style.setProperty('--glow-a', glowOf(accent, 0.10));
+      root.style.setProperty('--glow-b', glowOf(accent2, 0.07));
+      root.style.setProperty('--nav-a', veilOf(paper, 0.96));
+      root.style.setProperty('--nav-b', veilOf(paper, 0.86));
+      root.style.setProperty('--nav-c', veilOf(paper, 0.46));
+      root.style.setProperty('--nav-d', veilOf(paper, 0));
+      root.style.setProperty('color-scheme', 'light');
+    } else {
+      root.style.setProperty('--bg', theme.bg);
+      root.style.setProperty('--panel', theme.panel);
+      root.style.setProperty('--panel-2', theme.panel2);
+      root.style.setProperty('--accent', accent);
+      root.style.setProperty('--accent-2', accent2);
+      root.style.setProperty('--glow-a', theme.glowA || glowOf(accent, 0.16));
+      root.style.setProperty('--glow-b', theme.glowB || glowOf(accent2, 0.10));
+      if (theme.nav) {
+        root.style.setProperty('--nav-a', theme.nav[0]);
+        root.style.setProperty('--nav-b', theme.nav[1]);
+        root.style.setProperty('--nav-c', theme.nav[2]);
+        root.style.setProperty('--nav-d', theme.nav[3]);
+      }
+      root.style.setProperty('color-scheme', 'dark');
     }
-    root.style.setProperty('color-scheme', 'dark');
+
+    current = theme;
+  }
+
+  function glowOf(hex, alpha) {
+    var rgb = hexToRgb(hex);
+    return 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', ' + alpha + ')';
+  }
+
+  function veilOf(hex, alpha) {
+    var rgb = hexToRgb(hex);
+    return 'rgba(' + rgb.r + ', ' + rgb.g + ', ' + rgb.b + ', ' + alpha + ')';
   }
 
   function save(theme) {
@@ -155,6 +199,7 @@
   }
 
   function clear() {
+    current = null;
     try { localStorage.removeItem(KEY); } catch (e) {}
     var root = document.documentElement;
     ['--bg', '--panel', '--panel-2', '--accent', '--accent-2',
@@ -258,10 +303,14 @@
     return 'dark';
   }
 
+  var current = null;
+
   function setMode(mode) {
     var value = mode === 'light' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', value);
     try { localStorage.setItem(MODE_KEY, value); } catch (e) {}
+    /* the palette has to be recomputed for the new mode, not just left as is */
+    if (current) apply(current);
     return value;
   }
 
