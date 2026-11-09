@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Music — Yuhan's Desk</title>
-<meta name="description" content="Connect to QQ Music, or play a file from this computer with the player on the page.">
+<meta name="description" content="Search QQ Music by song name and play it here.">
 <link rel="icon" href="Images/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="Images/icon-180.png">
 <meta name="theme-color" content="#0b0b10">
@@ -30,14 +30,14 @@
 <main class="shell tool">
   <header class="tool__head">
     <h1>Music</h1>
-    <p>Search QQ Music by name and pick a result — their own player loads here and plays it.
-       Or play a file from this computer, which always works, even offline.</p>
+    <p>Search QQ Music by song name. Pick a result and their own player loads right here —
+       it only appears once you have chosen a song, so the page starts as a search box and nothing else.</p>
   </header>
 
   <section class="panel">
     <h2>QQ Music</h2>
-    <p class="hint">Type a song or a singer. The results come from QQ Music's own search, and picking
-      one loads their player right here — same audio, same charts, no account needed.</p>
+    <p class="hint">Results come from QQ Music's own search. Picking one loads their player in this
+      page — same audio, same catalogue, no account needed.</p>
 
     <form class="qq" id="qqForm" role="search">
       <input class="input" id="qqQuery" type="search" autocomplete="off"
@@ -58,49 +58,10 @@
     </div>
   </section>
 
-  <section class="panel">
-
-    <h2>Play from this computer</h2>
-    <p class="hint">Pick one or more audio files. They never leave the page — the browser plays them
-      straight from disk, so nothing is uploaded and the list is gone when you close the tab.</p>
-
-    <div class="row">
-      <label class="btn" for="files">Choose audio files</label>
-      <input id="files" type="file" accept="audio/*" multiple hidden>
-      <button class="btn btn--ghost" id="clear" type="button">Clear list</button>
-    </div>
-
-    <div class="player" style="margin-top:18px">
-      <div class="player__now">
-        <div class="player__art" aria-hidden="true">♪</div>
-        <div>
-          <div class="player__title" id="nowTitle">Nothing playing</div>
-          <div class="player__sub" id="nowSub">Add a few files to start</div>
-        </div>
-      </div>
-
-      <div>
-        <div class="player__bar" id="bar" role="slider" tabindex="0"
-             aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-          <i id="barFill"></i>
-        </div>
-        <div class="player__time"><span id="tNow">0:00</span><span id="tAll">0:00</span></div>
-      </div>
-
-      <div class="player__controls">
-        <button class="btn" id="prev" type="button" aria-label="Previous track">⏮</button>
-        <button class="btn btn--primary" id="play" type="button">Play</button>
-        <button class="btn" id="next" type="button" aria-label="Next track">⏭</button>
-        <span class="spacer"></span>
-        <button class="btn" id="shuffle" type="button" aria-pressed="false">Shuffle</button>
-        <button class="btn" id="repeat" type="button" aria-pressed="false">Repeat one</button>
-      </div>
-
-      <ul class="playlist" id="playlist">
-        <li class="empty">No tracks yet.</li>
-      </ul>
-    </div>
-    <audio id="audio" preload="metadata"></audio>
+  <section class="panel" id="recentPanel" hidden>
+    <h2>Recently played</h2>
+    <p class="hint">Kept in this browser only — the last eight songs you started.</p>
+    <ol class="qq-results" id="recentList"></ol>
   </section>
 </main>
 
@@ -119,9 +80,6 @@
     const frame = document.getElementById('qqFrame');
     const note = document.getElementById('qqNote');
     if (!form) return;
-
-    let counter = 0;
-    let pending = null;
 
     function search(query) {
       return new Promise(function (resolve, reject) {
@@ -161,6 +119,48 @@
       });
     }
 
+    const RECENT = 'deskMusicRecent';
+    let recent = [];
+    try { recent = JSON.parse(localStorage.getItem(RECENT)) || []; } catch (e) { recent = []; }
+
+    const recentPanel = document.getElementById('recentPanel');
+    const recentList = document.getElementById('recentList');
+
+    function remember(song) {
+      recent = [{ id: song.id, mid: song.mid, name: song.name, singer: song.singer, album: song.album }]
+        .concat(recent.filter(function (item) { return item.id !== song.id; }))
+        .slice(0, 8);
+      try { localStorage.setItem(RECENT, JSON.stringify(recent)); } catch (e) {}
+      paintRecent();
+    }
+
+    function paintRecent() {
+      if (!recent.length) {
+        recentPanel.hidden = true;
+        return;
+      }
+      recentList.replaceChildren();
+      recent.forEach(function (song, index) {
+        const li = document.createElement('li');
+        const n = document.createElement('span');
+        n.textContent = String(index + 1).padStart(2, '0');
+        const text = document.createElement('span');
+        const title = document.createElement('b');
+        title.textContent = song.name;
+        const who = document.createElement('span');
+        who.textContent = ' · ' + song.singer;
+        text.append(title, who);
+        li.append(n, text);
+        li.tabIndex = 0;
+        li.addEventListener('click', function () { play(song); });
+        li.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); play(song); }
+        });
+        recentList.appendChild(li);
+      });
+      recentPanel.hidden = false;
+    }
+
     function play(song) {
       const url = 'https://i.y.qq.com/n2/m/outchain/player/index.html?songid=' +
         encodeURIComponent(song.id) + '&songmid=' + encodeURIComponent(song.mid) + '&autoplay=1';
@@ -169,20 +169,16 @@
       note.textContent = 'Loaded “' + song.name + '” by ' + song.singer +
         '. If it does not start on its own, press play inside the player.';
       frame.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      remember(song);
     }
 
     function render(songs) {
       results.replaceChildren();
-      if (!songs.length) {
-        results.hidden = true;
-        return;
-      }
       songs.forEach(function (song, index) {
         const li = document.createElement('li');
         const n = document.createElement('span');
         n.textContent = String(index + 1).padStart(2, '0');
         const text = document.createElement('span');
-        text.innerHTML = '';
         const title = document.createElement('b');
         title.textContent = song.name;
         const who = document.createElement('span');
@@ -198,6 +194,8 @@
       });
       results.hidden = false;
     }
+
+    paintRecent();
 
     form.addEventListener('submit', function (event) {
       event.preventDefault();
@@ -233,159 +231,6 @@
           : 'The search could not be loaded — QQ Music may be blocked on this network.';
       });
     });
-  })();
-  /* ---------- the local player ---------- */
-  (function () {
-    var audio = document.getElementById('audio');
-    var playBtn = document.getElementById('play');
-    var prevBtn = document.getElementById('prev');
-    var nextBtn = document.getElementById('next');
-    var shuffleBtn = document.getElementById('shuffle');
-    var repeatBtn = document.getElementById('repeat');
-    var clearBtn = document.getElementById('clear');
-    var fileInput = document.getElementById('files');
-    var list = document.getElementById('playlist');
-    var bar = document.getElementById('bar');
-    var fill = document.getElementById('barFill');
-    var tNow = document.getElementById('tNow');
-    var tAll = document.getElementById('tAll');
-    var nowTitle = document.getElementById('nowTitle');
-    var nowSub = document.getElementById('nowSub');
-
-    var tracks = [];
-    var index = -1;
-    var shuffle = false;
-    var repeat = false;
-
-    function clock(seconds) {
-      if (!isFinite(seconds) || seconds < 0) seconds = 0;
-      var m = Math.floor(seconds / 60);
-      var s = Math.floor(seconds % 60);
-      return m + ':' + (s < 10 ? '0' : '') + s;
-    }
-
-    function render() {
-      list.replaceChildren();
-      if (!tracks.length) {
-        var empty = document.createElement('li');
-        empty.className = 'empty';
-        empty.textContent = 'No tracks yet.';
-        list.appendChild(empty);
-        return;
-      }
-      tracks.forEach(function (track, i) {
-        var li = document.createElement('li');
-        li.setAttribute('aria-current', String(i === index));
-        var n = document.createElement('span');
-        n.textContent = String(i + 1).padStart(2, '0');
-        var name = document.createElement('span');
-        name.textContent = track.label;
-        li.append(n, name);
-        li.addEventListener('click', function () { load(i, true); });
-        list.appendChild(li);
-      });
-    }
-
-    function load(i, autoplay) {
-      if (!tracks.length) return;
-      index = (i + tracks.length) % tracks.length;
-      var track = tracks[index];
-      audio.src = track.url;
-      nowTitle.textContent = track.label;
-      nowSub.textContent = track.kind === 'file' ? 'From this computer' : 'From a link';
-      render();
-      if (autoplay) audio.play().catch(function () { playBtn.textContent = 'Play'; });
-    }
-
-    function toggle() {
-      if (!tracks.length) return;
-      if (audio.paused) {
-        if (!audio.src) load(0, true);
-        else audio.play().catch(function () {});
-      } else {
-        audio.pause();
-      }
-    }
-
-    playBtn.addEventListener('click', toggle);
-    prevBtn.addEventListener('click', function () { load(index - 1, true); });
-    nextBtn.addEventListener('click', function () { load(index + 1, true); });
-
-    shuffleBtn.addEventListener('click', function () {
-      shuffle = !shuffle;
-      shuffleBtn.setAttribute('aria-pressed', String(shuffle));
-    });
-    repeatBtn.addEventListener('click', function () {
-      repeat = !repeat;
-      audio.loop = repeat;
-      repeatBtn.setAttribute('aria-pressed', String(repeat));
-    });
-
-    clearBtn.addEventListener('click', function () {
-      tracks = [];
-      index = -1;
-      audio.removeAttribute('src');
-      audio.load();
-      nowTitle.textContent = 'Nothing playing';
-      nowSub.textContent = 'Add a few files to start';
-      fill.style.width = '0%';
-      tNow.textContent = '0:00';
-      tAll.textContent = '0:00';
-      playBtn.textContent = 'Play';
-      render();
-    });
-
-    fileInput.addEventListener('change', function () {
-      var files = Array.prototype.slice.call(fileInput.files || []);
-      files.forEach(function (file) {
-        tracks.push({ label: file.name.replace(/\.[^.]+$/, ''), url: URL.createObjectURL(file), kind: 'file' });
-      });
-      if (index < 0 && tracks.length) load(0, false);
-      render();
-      fileInput.value = '';
-    });
-
-    audio.addEventListener('play', function () { playBtn.textContent = 'Pause'; });
-    audio.addEventListener('pause', function () { playBtn.textContent = 'Play'; });
-    audio.addEventListener('ended', function () {
-      if (repeat) return;
-      if (shuffle && tracks.length > 1) {
-        var next = index;
-        while (next === index) next = Math.floor(Math.random() * tracks.length);
-        load(next, true);
-        return;
-      }
-      load(index + 1, true);
-    });
-    audio.addEventListener('timeupdate', function () {
-      var ratio = audio.duration ? audio.currentTime / audio.duration : 0;
-      fill.style.width = (ratio * 100).toFixed(2) + '%';
-      bar.setAttribute('aria-valuenow', String(Math.round(ratio * 100)));
-      tNow.textContent = clock(audio.currentTime);
-      tAll.textContent = clock(audio.duration);
-    });
-
-    function seekAt(clientX) {
-      var box = bar.getBoundingClientRect();
-      var ratio = Math.min(1, Math.max(0, (clientX - box.left) / box.width));
-      if (audio.duration) audio.currentTime = ratio * audio.duration;
-    }
-    bar.addEventListener('click', function (event) { seekAt(event.clientX); });
-    bar.addEventListener('keydown', function (event) {
-      if (!audio.duration) return;
-      if (event.key === 'ArrowRight') { audio.currentTime = Math.min(audio.duration, audio.currentTime + 5); }
-      if (event.key === 'ArrowLeft') { audio.currentTime = Math.max(0, audio.currentTime - 5); }
-    });
-
-    document.addEventListener('keydown', function (event) {
-      var tag = (event.target.tagName || '').toLowerCase();
-      if (tag === 'input' || tag === 'textarea') return;
-      if (event.code === 'Space') { event.preventDefault(); toggle(); }
-      if (event.key === 'ArrowRight' && event.altKey) { nextBtn.click(); }
-      if (event.key === 'ArrowLeft' && event.altKey) { prevBtn.click(); }
-    });
-
-    render();
   })();
 </script>
 </body>
