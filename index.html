@@ -11,7 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=24">
+<script src="theme.js?v=25"></script>
+<link rel="stylesheet" href="style.css?v=25">
 </head>
 <body>
 
@@ -113,7 +114,27 @@
       progress in <code>localStorage</code>, the music list only while the tab is open, the tarot
       draw just to fill the strip above. Nothing is uploaded anywhere.
     </p>
-  </section></main>
+  </section>  <section class="panel appearance">
+    <div class="row" style="justify-content:space-between; align-items:flex-start; gap:16px">
+      <div style="max-width:34rem">
+        <h2>Appearance</h2>
+        <p class="hint small" style="margin-bottom:0">
+          A page cannot read your desktop wallpaper, so pick the picture here: the colours are
+          taken from it and knocked down into a dark palette. Or choose one of the five below.
+          Either way it is kept in this browser and applies to every page.
+        </p>
+      </div>
+      <div class="row" style="gap:8px">
+        <label class="btn btn--primary" for="wallpaper">Match my wallpaper</label>
+        <input id="wallpaper" type="file" accept="image/*" hidden>
+        <button class="btn btn--ghost" id="themeReset" type="button">Reset</button>
+      </div>
+    </div>
+
+    <div class="swatches" id="swatches"></div>
+    <p class="small muted" id="themeStatus" role="status" aria-live="polite" style="margin-top:6px"></p>
+  </section>
+</main>
 <script src="counter.js?v=21"></script>
 <script src="nav.js?v=21"></script>
 <script>
@@ -219,6 +240,71 @@
     }
     loadTemp();
     setInterval(loadTemp, 10 * 60 * 1000);
+  })();
+</script>
+
+<script>
+  (function () {
+    if (!window.DeskTheme) return;
+
+    var swatches = document.getElementById('swatches');
+    var status = document.getElementById('themeStatus');
+    var input = document.getElementById('wallpaper');
+
+    function paintSwatches(activeKey) {
+      swatches.replaceChildren();
+      Object.keys(DeskTheme.PRESETS).forEach(function (key) {
+        var preset = DeskTheme.PRESETS[key];
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'swatch' + (key === activeKey ? ' is-active' : '');
+        button.setAttribute('aria-pressed', String(key === activeKey));
+        button.title = preset.name;
+
+        var chip = document.createElement('span');
+        chip.className = 'swatch__chip';
+        chip.style.background = 'linear-gradient(135deg, ' + preset.accent + ', ' + preset.accent2 + ')';
+
+        var label = document.createElement('span');
+        label.className = 'swatch__name';
+        label.textContent = preset.name;
+
+        button.append(chip, label);
+        button.addEventListener('click', function () {
+          DeskTheme.save(DeskTheme.preset(key));
+          paintSwatches(key);
+          status.textContent = preset.name + ' applied.';
+        });
+        swatches.appendChild(button);
+      });
+    }
+
+    paintSwatches((DeskTheme.currentKey && DeskTheme.currentKey()) || null);
+
+    if (input) {
+      input.addEventListener('change', function () {
+        var file = input.files && input.files[0];
+        if (!file) return;
+        status.textContent = 'Reading the colours…';
+        DeskTheme.extract(file).then(function (theme) {
+          DeskTheme.save(theme);
+          paintSwatches(null);
+          status.textContent = 'Palette taken from ' + file.name + '.';
+        }).catch(function () {
+          status.textContent = 'That image could not be read.';
+        });
+        input.value = '';
+      });
+    }
+
+    var reset = document.getElementById('themeReset');
+    if (reset) {
+      reset.addEventListener('click', function () {
+        DeskTheme.clear();
+        paintSwatches(null);
+        status.textContent = 'Back to the default violet.';
+      });
+    }
   })();
 </script>
 </body>
