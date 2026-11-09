@@ -248,9 +248,11 @@ img, svg, canvas { display: block; max-width: 100%; }
     0 30px 70px rgba(0, 0, 0, 0.55),
     inset 0 1px 0 rgba(255, 255, 255, 0.75),
     inset 0 -1px 0 rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(18px) saturate(130%);
-  -webkit-backdrop-filter: blur(18px) saturate(130%);
   color: #17171d;
+  /* no backdrop-filter here on purpose: the hands repaint every frame, and a
+     blur behind them has to be recomputed each time, which shows up as a
+     stutter. The gradient alone reads the same over a flat dark page. */
+  contain: paint;
 }
 
 .cw__tabs {
@@ -270,7 +272,7 @@ img, svg, canvas { display: block; max-width: 100%; }
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 
-.cw__svg { width: 100%; height: auto; display: block; margin: 2px 0 4px; }
+.cw__svg { width: 100%; height: auto; display: block; margin: 2px 0 4px; contain: paint; }
 .cw__num {
   font-family: var(--sans); font-size: 38px; font-weight: 500;
   fill: rgba(23, 23, 29, 0.26);

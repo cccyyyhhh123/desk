@@ -177,12 +177,36 @@
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    const clockPane = document.getElementById('paneClock');
+
     let last = performance.now();
+    let raf = 0;
+    let idle = false;
+
     function frame(now) {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
 
+      /* the timer tab or a hidden tab does not need a redrawn clock */
+      if (document.hidden || (clockPane && clockPane.hidden)) {
+        idle = true;
+        raf = requestAnimationFrame(frame);
+        return;
+      }
+
       targets();
+
+      /* coming back after a pause: put the hands where the time is instead of
+         letting the spring spin them round the dial */
+      if (idle) {
+        idle = false;
+        hands.forEach(function (hand) {
+          hand.angle = hand.target;
+          hand.vel = 0;
+          draw(hand);
+        });
+        return;
+      }
       hands.forEach(function (hand) {
         const delta = wrap(hand.target - hand.angle);
         hand.vel += (delta * hand.k - hand.vel * hand.c) * dt;
@@ -190,7 +214,7 @@
         draw(hand);
       });
 
-      requestAnimationFrame(frame);
+      raf = requestAnimationFrame(frame);
     }
     if (reduce) {
       /* still hands, updated once a second — no spring, no wobble */
@@ -199,7 +223,7 @@
         hands.forEach(function (hand) { hand.angle = hand.target; draw(hand); });
       }, 1000);
     } else {
-      requestAnimationFrame(frame);
+      raf = requestAnimationFrame(frame);
     }
 
     /* the two chips */
