@@ -321,8 +321,12 @@ img, svg, canvas { display: block; max-width: 100%; }
 
 /* elastic slider (see elastic-slider.js) */
 .es-row {
-  display: grid; grid-template-columns: 4.6rem minmax(0, 26rem) minmax(0, 1fr);
+  display: grid; grid-template-columns: 4.6rem minmax(0, 24rem) 2.4rem minmax(0, 1fr);
   align-items: center; gap: 14px; margin: 18px 0 4px;
+}
+.es-row__value {
+  font-size: 0.82rem; color: var(--muted);
+  font-variant-numeric: tabular-nums; text-align: right;
 }
 .es-row__label { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-2); }
 .es-row__note { line-height: 1.3; }
