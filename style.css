@@ -144,7 +144,7 @@ img, svg, canvas { display: block; max-width: 100%; }
 .card__meta { margin-top: auto; font-size: 0.78rem; color: var(--muted-2); font-family: var(--mono); }
 
 /* 6 · tools */
-.tool { padding: 40px 0 64px; }
+.tool { position: relative; z-index: 1; padding: 40px 0 64px; }
 .tool__head { margin-bottom: 26px; }
 .tool__head h1 { font-size: clamp(1.7rem, 3vw, 2.4rem); letter-spacing: -0.03em; }
 .tool__head p { margin-top: 8px; color: var(--muted); max-width: 46rem; }
@@ -360,6 +360,11 @@ td.num.pos { color: var(--good); }
 td.num.neg { color: var(--muted); }
 .del { background: none; border: 0; color: var(--muted-2); cursor: pointer; font-size: 0.82rem; padding: 2px; }
 .del:hover { color: var(--bad); }
+
+#sky {
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  z-index: 0; pointer-events: none;
+}
 
 /* ---- tarot ---- */
 .tarot-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
