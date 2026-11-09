@@ -33,7 +33,18 @@
       }
 
       column.appendChild(strip);
-      host.appendChild(column);
+
+      /* the tile look: the window stays exactly one digit tall, and the box
+         around it is a separate element so padding cannot break the window */
+      if (opts.tile) {
+        var tile = document.createElement('span');
+        tile.className = 'ct__tile';
+        tile.appendChild(column);
+        host.appendChild(tile);
+      } else {
+        host.appendChild(column);
+      }
+
       strips.push(strip);
 
       if (separatorAt > 0 && i === separatorAt - 1) {

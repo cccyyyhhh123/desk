@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=19">
+<link rel="stylesheet" href="style.css?v=22">
 </head>
 <body>
 
@@ -38,7 +38,22 @@
 
     <dl class="strip" id="strip">
       <div><dt>Today</dt><dd id="stripDate">—</dd></div>
-      <div><dt>Now</dt><dd class="strip__clock"><span id="stripTime"></span></dd></div>
+            <div>
+        <dt>Now</dt>
+        <dd class="strip__clock">
+          <span class="tc">
+            <span class="tc__group">
+              <span class="tc__tiles" id="hourTiles"></span>
+              <span class="tc__label">Hours</span>
+            </span>
+            <span class="tc__sep" aria-hidden="true">:</span>
+            <span class="tc__group">
+              <span class="tc__tiles" id="minTiles"></span>
+              <span class="tc__label">Minutes</span>
+            </span>
+          </span>
+        </dd>
+      </div>
       <div><dt>Danzhou</dt><dd id="stripTemp">—</dd></div>
     </dl>
   </section>
@@ -97,35 +112,44 @@
       draw just to fill the strip above. Nothing is uploaded anywhere.
     </p>
   </section></main>
-
+<script src="counter.js?v=21"></script>
+<script src="nav.js?v=21"></script>
 <script>
   (function () {
     var hour = new Date().getHours();
-    var greeting = hour < 5 ? 'Still up' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    document.getElementById('greeting').textContent = greeting;
+    var text = hour < 5 ? 'Still up' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('greeting').textContent = text;
 
-    /* date and time, both kept current on the same tick */
     var dateEl = document.getElementById('stripDate');
-    var timeHost = document.getElementById('stripTime');
+    var hourHost = document.getElementById('hourTiles');
+    var minHost = document.getElementById('minTiles');
+    var tempEl = document.getElementById('stripTemp');
 
-    var clock = timeHost && window.Counter
-      ? window.Counter.mount(timeHost, { digits: 4, separatorAt: 2, blink: true, label: 'Time' })
-      : null;
+    /* two rolling counters: hours and minutes, one rounded tile per digit */
+    var hours = (window.Counter && hourHost)
+      ? window.Counter.mount(hourHost, { digits: 2, tile: true, label: 'Hours' }) : null;
+    var minutes = (window.Counter && minHost)
+      ? window.Counter.mount(minHost, { digits: 2, tile: true, label: 'Minutes' }) : null;
 
     function tick() {
       var now = new Date();
       dateEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
-      var hours = String(now.getHours()).padStart(2, '0');
-      var minutes = String(now.getMinutes()).padStart(2, '0');
-      if (clock) clock.set(hours + minutes);
-      else if (timeHost) timeHost.textContent = hours + ':' + minutes;
+      var hh = String(now.getHours()).padStart(2, '0');
+      var mm = String(now.getMinutes()).padStart(2, '0');
+
+      if (hours && minutes) {
+        hours.set(hh);
+        minutes.set(mm);
+      } else if (hourHost && minHost) {
+        hourHost.textContent = hh;
+        minHost.textContent = mm;
+      }
     }
     tick();
     setInterval(tick, 1000);
 
-    /* the temperature, from the same place the weather page reads */
-    var tempEl = document.getElementById('stripTemp');
+    /* the temperature, from the same source the weather page reads */
     var CONDITIONS = [
       [0, 'clear'], [2, 'mostly clear'], [3, 'overcast'], [48, 'fog'], [57, 'drizzle'],
       [67, 'rain'], [77, 'snow'], [82, 'showers'], [86, 'snow showers'], [99, 'storm']
@@ -158,80 +182,6 @@
     }
     loadTemp();
     setInterval(loadTemp, 10 * 60 * 1000);
-  })();
-</script>
-<script src="nav.js?v=17"></script>
-<script>
-  (function () {
-    var hour = new Date().getHours();
-    var text = hour < 5 ? 'Still up' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-    document.getElementById('greeting').textContent = text;
-
-    var now = new Date();
-    document.getElementById('stripDate').textContent = now.toLocaleDateString('en-GB', {
-      weekday: 'short', day: 'numeric', month: 'short'
-    });
-
-    /* the ledger page creates the first book; do the same here so the strip
-       has something to show before anyone opens that page */
-    try {
-      var books0 = JSON.parse(localStorage.getItem('shareBillStorage')) || {};
-      if (!Object.keys(books0).length) {
-        var key0 = String(Math.floor(100000 + Math.random() * 900000));
-        var now0 = Date.now();
-        books0[key0] = [
-          { id: now0 + 1, date: new Date(now0 - 86400000).toISOString().slice(0, 10), type: 'spend', class: 'Grocery run', money: 32.4, note: '' },
-          { id: now0 + 2, date: new Date(now0 - 2 * 86400000).toISOString().slice(0, 10), type: 'deposit', class: 'Deposit', money: 180, note: '' },
-          { id: now0 + 3, date: new Date(now0 - 4 * 86400000).toISOString().slice(0, 10), type: 'spend', class: 'Steam', money: 14.99, note: '' },
-          { id: now0 + 4, date: new Date(now0 - 6 * 86400000).toISOString().slice(0, 10), type: 'spend', class: 'Tram fare', money: 6, note: '' },
-          { id: now0 + 5, date: new Date(now0 - 11 * 86400000).toISOString().slice(0, 10), type: 'deposit', class: 'Deposit', money: 124.39, note: '' }
-        ];
-        localStorage.setItem('shareBillStorage', JSON.stringify(books0));
-        sessionStorage.setItem('activeBookKey', key0);
-      }
-    } catch (error) {}
-
-    /* ledger balance, if the book has been opened on this browser */
-    try {
-      var books = JSON.parse(localStorage.getItem('shareBillStorage')) || {};
-      var keys = Object.keys(books);
-      var total = 0;
-      keys.forEach(function (key) {
-        (books[key] || []).forEach(function (entry) {
-          total += entry.type === 'deposit' ? Number(entry.money) : -Number(entry.money);
-        });
-      });
-      document.getElementById('stripBalance').textContent = keys.length
-        ? total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-        : 'no book yet';
-    } catch (error) {
-      document.getElementById('stripBalance').textContent = 'no book yet';
-    }
-
-    /* study progress */
-    try {
-      var progress = JSON.parse(localStorage.getItem('deskStudyProgress')) || {};
-      var known = 0, seen = 0;
-      Object.keys(progress).forEach(function (id) {
-        seen++;
-        if (progress[id] === 'known') known++;
-      });
-      document.getElementById('stripStudy').textContent = seen ? known + ' / ' + seen : 'not started';
-    } catch (error) {
-      document.getElementById('stripStudy').textContent = 'not started';
-    }
-
-    /* breathing rounds done today, from the tarot page */
-    try {
-      var mindful = JSON.parse(localStorage.getItem('deskMindful')) || null;
-      var today = new Date().toISOString().slice(0, 10);
-      var rounds = mindful && mindful.date === today ? Number(mindful.rounds) || 0 : 0;
-      document.getElementById('stripMindful').textContent = rounds
-        ? rounds + (rounds === 1 ? ' round' : ' rounds')
-        : 'not yet';
-    } catch (error) {
-      document.getElementById('stripMindful').textContent = 'not yet';
-    }
   })();
 </script>
 </body>
