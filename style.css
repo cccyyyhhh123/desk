@@ -61,10 +61,15 @@ img, svg, canvas { display: block; max-width: 100%; }
 .nav {
   position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; gap: 18px;
-  padding: 14px 24px;
-  background: rgba(11, 11, 16, 0.72);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--line);
+  padding: 14px 24px 22px;
+  /* the bar fades into the page instead of stopping on a line — a hard
+     border under a translucent band reads as a seam */
+  background: linear-gradient(180deg,
+    rgba(10, 10, 16, 0.94) 0%,
+    rgba(10, 10, 16, 0.82) 38%,
+    rgba(10, 10, 16, 0.42) 72%,
+    rgba(10, 10, 16, 0) 100%);
+  border-bottom: 0;
 }
 .nav__brand { font-weight: 700; letter-spacing: 0.01em; color: var(--ink); white-space: nowrap; }
 .nav__brand span { color: var(--accent); }
