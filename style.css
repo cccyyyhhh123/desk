@@ -1006,6 +1006,135 @@ body, .nav, .panel, .card, .metric, .rail__block, .watch, .stat,
 }
 .swatch__name { font-size: 0.72rem; color: var(--muted); }
 .swatch.is-active .swatch__name { color: var(--ink); }
+
+/* ---------- study: content-driven dashboard ----------
+   The photo and the one headline figure carry the page; everything else is a
+   card at one of three widths, so no two rows look the same. */
+.study-hero {
+  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: clamp(16px, 2.4vw, 28px); align-items: stretch;
+  margin-bottom: clamp(16px, 2.4vw, 28px);
+}
+.study-hero__photo {
+  margin: 0; border-radius: 20px; overflow: hidden;
+  border: 1px solid var(--line); background: var(--panel);
+  /* the picture leads, but it must not push the grid off the first screen */
+  height: clamp(15rem, 24vw, 21rem); position: relative;
+}
+.study-hero__photo img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  filter: saturate(0.92) contrast(1.02);
+}
+.study-hero__photo::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(200deg, transparent 40%, rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+
+.study-hero__panel {
+  display: grid; gap: 10px; align-content: center;
+  padding: clamp(18px, 2.6vw, 30px);
+  border-radius: 20px; background: var(--panel);
+  border: 1px solid var(--line); box-shadow: var(--elevation);
+}
+.study-hero__eyebrow {
+  font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted-2);
+}
+.study-hero__eyebrow span { color: var(--accent); }
+.study-hero__figure {
+  font-size: clamp(3.2rem, 7vw, 5rem); line-height: 0.95; font-weight: 700;
+  letter-spacing: -0.05em; font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.study-hero__figure small { font-size: 0.32em; font-weight: 500; color: var(--muted); margin-left: 6px; }
+.study-hero__note { font-size: 0.86rem; color: var(--muted); }
+.study-hero__track {
+  height: 6px; border-radius: 999px; background: var(--line); overflow: hidden;
+}
+.study-hero__track i {
+  display: block; height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.35s ease;
+}
+.study-hero__facts {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px; margin: 8px 0 0; padding-top: 12px; border-top: 1px solid var(--line);
+}
+.study-hero__facts dt {
+  font-size: 0.64rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted-2);
+}
+.study-hero__facts dd { margin: 3px 0 0; font-size: 1.05rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* three card widths, so the grid reads as a composition */
+.study-grid {
+  display: grid; grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: clamp(14px, 1.8vw, 22px); padding-bottom: 72px;
+}
+.scard {
+  grid-column: span 12;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+  padding: 20px; box-shadow: var(--elevation);
+  display: grid; gap: 12px; align-content: start; min-width: 0;
+}
+.scard--courses { grid-column: span 7; }
+.scard--chart { grid-column: span 5; }
+.scard--deck { grid-column: span 8; }
+.scard--exams { grid-column: span 4; }
+.scard--projects { grid-column: span 12; }
+/* the course tiles sit inside a 7-column card, so they get two columns */
+.scard--courses .subjects { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.scard--courses .subject__head b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.scard h2 { font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted-2); font-weight: 600; }
+.scard__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.scard__meta { font-size: 0.76rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.scard__hint { font-size: 0.78rem; color: var(--muted); }
+
+/* period switch: three small buttons, one clearly pressed */
+.period { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--panel-2); border: 1px solid var(--line); }
+.period button {
+  border: 0; background: transparent; color: var(--muted);
+  padding: 5px 11px; border-radius: 999px; font-size: 0.76rem; cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+.period button:hover { color: var(--ink); }
+.period button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18); }
+
+/* the chart: four columns, the selected course picked out */
+.chart {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px; align-items: end; min-height: 12rem; margin-top: 4px;
+}
+.chart__col {
+  display: grid; gap: 6px; justify-items: center; align-content: end;
+  border: 1px solid transparent; border-radius: 12px; background: transparent;
+  padding: 8px 4px 6px; cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+.chart__col:hover { background: var(--hover); }
+.chart__col.is-current { border-color: var(--line-2); background: var(--hover); }
+.chart__value { font-size: 0.86rem; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.chart__bar {
+  display: flex; align-items: flex-end; width: 100%; height: 8.5rem;
+  border-radius: 8px; background: var(--hover); overflow: hidden;
+}
+.chart__bar i {
+  display: block; width: 100%; min-height: 3px; border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  transition: height 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.chart__label { font-size: 0.66rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-2); }
+
+@media (max-width: 1100px) {
+  .scard--courses, .scard--chart, .scard--deck, .scard--exams { grid-column: span 12; }
+  .study-hero { grid-template-columns: minmax(0, 1fr); }
+  .study-hero__photo { min-height: 15rem; max-height: 22rem; }
+}
+@media (max-width: 680px) {
+  .study-hero__facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chart__bar { height: 6.5rem; }
+}
+
 /* 7 · phone */
 @media (max-width: 1000px) {
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
