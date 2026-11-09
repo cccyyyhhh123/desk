@@ -479,22 +479,22 @@ img, svg, canvas { display: block; max-width: 100%; }
 .cw {
   position: relative; max-width: 24rem; margin: 0 auto; padding: 14px 16px 62px;
   border-radius: 30px;
-  /* the card is a surface of the page, not a separate object: it takes the
-     theme's panel colour and a wash of the current accent, so it follows both
-     the light/dark switch and the palette. */
-  background:
-    radial-gradient(120% 80% at 18% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 62%),
-    linear-gradient(180deg,
-      color-mix(in srgb, var(--accent) 9%, var(--panel-2)),
-      var(--panel));
+  /* The card is a surface of the page, not a separate object: the panel
+     colours come straight from the theme, and the accent wash is a separate
+     layer at low opacity rather than a color-mix(), which older browsers
+     would drop — leaving the card with no background at all. */
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
   border: 1px solid var(--line-2);
-  box-shadow: var(--elevation), inset 0 1px 0 color-mix(in srgb, var(--ink) 8%, transparent);
+  box-shadow: var(--elevation);
   color: var(--ink);
-  /* no backdrop-filter here on purpose: the hands repaint every frame, and a
-     blur behind them has to be recomputed each time, which shows up as a
-     stutter. */
   contain: paint;
 }
+.cw::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background: radial-gradient(120% 80% at 18% 0%, var(--accent), transparent 62%);
+  opacity: 0.14; pointer-events: none; z-index: 0;
+}
+.cw > * { position: relative; z-index: 1; }
 
 /* the dial reads in ink, the second hand in the palette's accent */
 #ticks line { stroke: currentColor; }
@@ -502,7 +502,7 @@ img, svg, canvas { display: block; max-width: 100%; }
 #hourHand, #minHand { fill: none; }
 #secHand { stroke: var(--accent); }
 #secDot, .sec-fill { fill: var(--accent); }
-#hubPin { fill: color-mix(in srgb, var(--bg) 55%, var(--ink)); }
+#hubPin { fill: var(--panel-2); }
 .cw__num { fill: currentColor; opacity: 0.26; }
 
 .cw__tabs {
@@ -806,10 +806,16 @@ body, .nav, .panel, .card, .metric, .rail__block, .watch, .stat,
 
 /* the study figure leads the row: accent edge, bigger number */
 .metric--primary {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
-  background: color-mix(in srgb, var(--accent) 14%, var(--panel));
+  border-color: var(--accent);
+  background: var(--panel);
+  position: relative; overflow: hidden;
 }
-.metric--primary .metric__label { color: color-mix(in srgb, var(--accent) 70%, var(--muted-2)); }
+.metric--primary::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: var(--accent); opacity: 0.10;
+}
+.metric--primary > * { position: relative; z-index: 1; }
+.metric--primary .metric__label { color: var(--accent); }
 .metric--primary .metric__value { font-size: clamp(1.9rem, 3.4vw, 2.6rem); }
 .metric--primary .metric__track { height: 4px; }
 .metric__track {
