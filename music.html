@@ -30,29 +30,36 @@
 <main class="shell tool">
   <header class="tool__head">
     <h1>Music</h1>
-    <p>Two ways in: the QQ Music player embedded from their own site, or a file on this computer
-       played by the player below. The second one always works, even offline.</p>
+    <p>Search QQ Music by name and pick a result — their own player loads here and plays it.
+       Or play a file from this computer, which always works, even offline.</p>
   </header>
 
   <section class="panel">
     <h2>QQ Music</h2>
-    <p class="hint">Paste a song or playlist link from QQ Music, and the page tries to embed their
-      player. If it stays blank, the site is refusing to be embedded — use the button instead.</p>
-    <div class="row" style="margin-bottom:14px">
-      <input class="input" id="qqLink" type="url" style="max-width:26rem"
-             placeholder="https://y.qq.com/n/ryqq/songDetail/…  or  playlist/…"
-             aria-label="QQ Music link">
-      <button class="btn btn--primary" id="qqEmbed" type="button">Embed</button>
+    <p class="hint">Type a song or a singer. The results come from QQ Music's own search, and picking
+      one loads their player right here — same audio, same charts, no account needed.</p>
+
+    <form class="qq" id="qqForm" role="search">
+      <input class="input" id="qqQuery" type="search" autocomplete="off"
+             placeholder="Hello, 晴天, Adele…" aria-label="Search QQ Music">
+      <button class="btn btn--primary" type="submit">Search</button>
       <a class="btn btn--ghost" href="https://y.qq.com" target="_blank" rel="noopener">Open QQ Music ↗</a>
-    </div>
-    <div id="qqStage" hidden>
+    </form>
+
+    <p class="small muted" id="qqStatus" role="status" aria-live="polite" style="margin-top:10px">
+      Type a name and press Enter.
+    </p>
+
+    <ol class="qq-results" id="qqResults" hidden></ol>
+
+    <div id="qqStage" hidden style="margin-top:14px">
       <iframe class="embed" id="qqFrame" title="QQ Music player" allow="autoplay; encrypted-media"></iframe>
-      <p class="embed-note" id="qqNote">Loading the player…</p>
+      <p class="embed-note" id="qqNote"></p>
     </div>
-    <p class="embed-note" id="qqIdle">Nothing embedded yet.</p>
   </section>
 
   <section class="panel">
+
     <h2>Play from this computer</h2>
     <p class="hint">Pick one or more audio files. They never leave the page — the browser plays them
       straight from disk, so nothing is uploaded and the list is gone when you close the tab.</p>
@@ -99,40 +106,134 @@
 
 <script src="nav.js"></script>
 <script>
-  /* ---------- the QQ Music embed ---------- */
+  /* ---------- QQ Music search ----------
+     Their search endpoint answers JSONP, which a <script> tag can load from
+     another origin, and their outchain player accepts ?songid= — so a name
+     typed here can end up playing inside that iframe. */
   (function () {
-    var input = document.getElementById('qqLink');
-    var button = document.getElementById('qqEmbed');
-    var stage = document.getElementById('qqStage');
-    var frame = document.getElementById('qqFrame');
-    var note = document.getElementById('qqNote');
-    var idle = document.getElementById('qqIdle');
-    if (!button) return;
+    const form = document.getElementById('qqForm');
+    const input = document.getElementById('qqQuery');
+    const status = document.getElementById('qqStatus');
+    const results = document.getElementById('qqResults');
+    const stage = document.getElementById('qqStage');
+    const frame = document.getElementById('qqFrame');
+    const note = document.getElementById('qqNote');
+    if (!form) return;
 
-    /* QQ Music share links carry the id at the end of the path */
-    function embedUrl(link) {
-      var match = link.match(/(songDetail|playlist|album|toplist)\/([0-9A-Za-z]+)/);
-      if (!match) return null;
-      var kind = match[1] === 'songDetail' ? 'song' : match[1] === 'playlist' ? 'playlist' : match[1];
-      return 'https://i.y.qq.com/n2/m/outchain/player/index.html?type=' + kind +
-             '&id=' + match[2] + '&autoplay=0';
+    let counter = 0;
+    let pending = null;
+
+    function search(query) {
+      return new Promise(function (resolve, reject) {
+        /* QQ Music ignores the callback name we ask for and always calls
+           window.callback — so that is the one we install. */
+        const script = document.createElement('script');
+        let timer = 0;
+        let done = false;
+
+        function clean() {
+          if (done) return;
+          done = true;
+          try { delete window.callback; } catch (e) { window.callback = undefined; }
+          script.remove();
+          clearTimeout(timer);
+        }
+
+        window.callback = function (data) {
+          clean();
+          resolve(data);
+        };
+
+        script.onerror = function () {
+          clean();
+          reject(new Error('qq-search-failed'));
+        };
+
+        script.src = 'https://c.y.qq.com/soso/fcgi-bin/client_search_cp?format=jsonp&n=8&p=1&w=' +
+          encodeURIComponent(query) + '&callback=callback';
+
+        timer = setTimeout(function () {
+          clean();
+          reject(new Error('qq-search-timeout'));
+        }, 9000);
+
+        document.head.appendChild(script);
+      });
     }
 
-    button.addEventListener('click', function () {
-      var url = embedUrl(input.value.trim());
-      if (!url) {
-        note.textContent = 'That does not look like a QQ Music link — copy it from the song page.';
-        stage.hidden = false;
-        frame.removeAttribute('src');
+    function play(song) {
+      const url = 'https://i.y.qq.com/n2/m/outchain/player/index.html?songid=' +
+        encodeURIComponent(song.id) + '&songmid=' + encodeURIComponent(song.mid) + '&autoplay=1';
+      stage.hidden = false;
+      frame.src = url;
+      note.textContent = 'Loaded “' + song.name + '” by ' + song.singer +
+        '. If it does not start on its own, press play inside the player.';
+      frame.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    function render(songs) {
+      results.replaceChildren();
+      if (!songs.length) {
+        results.hidden = true;
         return;
       }
-      stage.hidden = false;
-      idle.hidden = true;
-      frame.src = url;
-      note.textContent = 'Trying to embed… if this stays blank, QQ Music is blocking the frame — use “Open QQ Music”.';
+      songs.forEach(function (song, index) {
+        const li = document.createElement('li');
+        const n = document.createElement('span');
+        n.textContent = String(index + 1).padStart(2, '0');
+        const text = document.createElement('span');
+        text.innerHTML = '';
+        const title = document.createElement('b');
+        title.textContent = song.name;
+        const who = document.createElement('span');
+        who.textContent = ' · ' + song.singer + (song.album ? ' · ' + song.album : '');
+        text.append(title, who);
+        li.append(n, text);
+        li.tabIndex = 0;
+        li.addEventListener('click', function () { play(song); });
+        li.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); play(song); }
+        });
+        results.appendChild(li);
+      });
+      results.hidden = false;
+    }
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      const query = input.value.trim();
+      if (!query) {
+        status.textContent = 'Type a song or a singer first.';
+        return;
+      }
+      status.textContent = 'Searching QQ Music for “' + query + '”…';
+      results.hidden = true;
+
+      search(query).then(function (data) {
+        const list = (data && data.data && data.data.song && data.data.song.list) || [];
+        const songs = list.map(function (item) {
+          return {
+            id: item.songid,
+            mid: item.songmid,
+            name: item.songname,
+            singer: (item.singer || []).map(function (person) { return person.name; }).join(' / '),
+            album: item.albumname || ''
+          };
+        }).filter(function (song) { return song.id && song.mid; });
+
+        if (!songs.length) {
+          status.textContent = 'QQ Music returned nothing for “' + query + '”.';
+          return;
+        }
+        status.textContent = songs.length + ' results · pick one to play it.';
+        render(songs);
+      }).catch(function (error) {
+        status.textContent = error.message === 'qq-search-timeout'
+          ? 'QQ Music did not answer in time — try again, or open their site.'
+          : 'The search could not be loaded — QQ Music may be blocked on this network.';
+      });
     });
   })();
-
   /* ---------- the local player ---------- */
   (function () {
     var audio = document.getElementById('audio');
