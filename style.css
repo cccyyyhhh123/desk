@@ -297,15 +297,68 @@ img, svg, canvas { display: block; max-width: 100%; }
 .qq-results b { font-weight: 600; color: var(--ink); }
 .qq-results span span { color: var(--muted); font-size: 0.86rem; }
 
+
+/* ---------- what the desktop is playing ---------- */
+/* .bridge sets its own display, which would beat the hidden attribute */
+.bridge[hidden], .bridge-help[hidden] { display: none !important; }
+.bridge { display: grid; gap: 12px; }
+.bridge__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.bridge__state {
+  font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted-2); padding: 3px 9px; border-radius: 999px;
+  border: 1px solid var(--line);
+}
+.bridge__state.is-live { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, var(--line)); }
+
+.bridge__now { display: flex; align-items: center; gap: 14px; }
+.bridge__art {
+  width: 54px; height: 54px; border-radius: 14px; flex: none;
+  display: grid; place-items: center; font-size: 1.3rem; color: var(--accent);
+  background: radial-gradient(circle at 30% 25%, var(--hover-2), var(--panel-2));
+  border: 1px solid var(--line);
+}
+.bridge__meta { min-width: 0; flex: 1; }
+.bridge__title {
+  font-size: 1.12rem; font-weight: 650; letter-spacing: -0.01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bridge__artist {
+  font-size: 0.86rem; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bridge__controls { display: flex; align-items: center; gap: 8px; flex: none; }
+.bridge__btn { padding: 8px 12px; font-size: 0.9rem; }
+
+.bridge__bar { height: 5px; border-radius: 999px; background: var(--line); overflow: hidden; }
+.bridge__bar i {
+  display: block; height: 100%; width: 0; border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 1.9s linear;
+}
+.bridge__times {
+  display: flex; justify-content: space-between;
+  font-size: 0.74rem; color: var(--muted-2); font-variant-numeric: tabular-nums;
+  margin-top: -6px;
+}
+
+@media (max-width: 680px) {
+  .bridge__now { flex-wrap: wrap; }
+  .bridge__controls { width: 100%; justify-content: flex-end; }
+}
+
 /* ---- music ---- */
 .embed { width: 100%; min-height: 320px; border: 1px solid var(--line); border-radius: var(--r); background: var(--panel-2); }
 
 /* the QQ player is a single bar, not a page: a 320px frame leaves a white void */
 .embed--player {
-  height: 74px; min-height: 0;
+  /* a little slack: at exactly the content height any zoom made the frame
+     grow a scrollbar, which showed as a dark strip with two arrows */
+  height: 86px; min-height: 0;
   border-radius: 12px;
   background: #ffffff;
   color-scheme: light;
+  overflow: hidden;
+  scrollbar-width: none;
 }
 .embed-note { font-size: 0.85rem; color: var(--muted); margin-top: 10px; }
 
@@ -455,14 +508,16 @@ img, svg, canvas { display: block; max-width: 100%; }
 
 .exams { display: grid; gap: 8px; margin-top: 14px; }
 .exam {
-  display: grid; grid-template-columns: minmax(0, 1fr) 10rem 8rem;
-  align-items: center; gap: 12px;
+  /* the code, the date and the countdown, in the narrow exam card: the name
+     keeps its width, the date takes what is left, the countdown never wraps */
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center; gap: 10px;
   padding: 9px 12px; border-radius: var(--r-sm);
   background: var(--panel-2); border: 1px solid var(--line);
 }
-.exam__name { font-size: 0.92rem; color: var(--ink-2); }
-.exam__input { padding: 7px 10px; font-size: 0.88rem; }
-.exam__when { font-size: 0.8rem; color: var(--muted-2); text-align: right; }
+.exam__name { font-size: 0.8rem; color: var(--ink-2); white-space: nowrap; }
+.exam__input { width: 100%; min-width: 0; padding: 7px 9px; font-size: 0.84rem; }
+.exam__when { font-size: 0.78rem; color: var(--muted-2); text-align: right; white-space: nowrap; }
 .exam__when.is-soon { color: var(--warn); }
 .exam__when.is-past { color: var(--muted-2); text-decoration: line-through; }
 
