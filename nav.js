@@ -147,5 +147,6 @@
     reflect(next);
   });
 
+  /* a sibling of the menu: beside the links on desktop, beside the brand on a phone */
   nav.appendChild(button);
 })();

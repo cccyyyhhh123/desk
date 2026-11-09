@@ -82,7 +82,8 @@ img, svg, canvas { display: block; max-width: 100%; }
   border-bottom: 0;
 }
 .nav__mode {
-  margin-left: 8px; width: 34px; height: 34px; padding: 0;
+  margin-left: 6px; width: 34px; height: 34px; padding: 0; flex: none;
+  align-self: center;
   display: inline-grid; place-items: center;
   border: 1px solid var(--line); border-radius: 999px;
   background: transparent; color: var(--muted); cursor: pointer;
@@ -1169,6 +1170,13 @@ body, .nav, .panel, .card, .metric, .rail__block, .watch, .stat,
   .nav { flex-wrap: wrap; row-gap: 8px; padding: 12px 16px; }
   .nav__links { width: 100%; margin-left: 0; gap: 2px; }
   .nav__links a { padding: 0 8px; font-size: 0.8rem; height: 32px; }
+  /* on a phone the toggle belongs on the brand row, not stranded after the links */
+  .nav__links {
+    order: 2; flex-wrap: nowrap; overflow-x: auto;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .nav__links::-webkit-scrollbar { display: none; }
+  .nav__mode { order: 1; margin-left: auto; width: 32px; height: 32px; }
   .shell { padding: 0 16px; }
   .hero { padding: 36px 0 4px; }
   .entryform { grid-template-columns: 1fr; }
