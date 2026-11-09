@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=22">
+<link rel="stylesheet" href="style.css?v=23">
 </head>
 <body>
 
@@ -32,9 +32,11 @@
   <section class="hero">
     <p class="hero__eyebrow" id="greeting">Good evening</p>
     <h1>Six small things,<br>on <em>one desk</em>.</h1>
-    <p>Search QQ Music and play it here, flip revision cards for four courses, a clock whose
-       hands are ropes plus a countdown, the shared expense book, and a tarot spread with a
-       breathing timer. Everything stays in this browser.</p>
+    <figure class="affirm">
+      <blockquote class="affirm__line" id="affirmLine">—</blockquote>
+      <figcaption class="affirm__cn" id="affirmCn">今日肯定语</figcaption>
+      <button class="affirm__next" id="affirmNext" type="button">another ↻</button>
+    </figure>
 
     <dl class="strip" id="strip">
       <div><dt>Today</dt><dd id="stripDate">—</dd></div>
@@ -119,6 +121,41 @@
     var hour = new Date().getHours();
     var text = hour < 5 ? 'Still up' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
     document.getElementById('greeting').textContent = text;
+
+    /* one affirmation a day, chosen by the date so it is the same all day */
+    var AFFIRMATIONS = [
+      { en: 'Slow is smooth, and smooth is fast.', cn: '慢就是稳，稳就是快。' },
+      { en: 'You do not have to feel ready to begin.', cn: '不必准备好了才开始。' },
+      { en: 'One page is still a page done.', cn: '一页，也是一页。' },
+      { en: 'The thing you are avoiding is usually small.', cn: '你躲的那件事，往往并不大。' },
+      { en: 'Ask earlier than feels polite.', cn: '去问，比你以为的时机早一点。' },
+      { en: 'Rest is part of the work, not a reward for it.', cn: '休息不是奖励，是工作的一部分。' },
+      { en: 'Say the true thing once, plainly.', cn: '把真话说一遍，说清楚就好。' },
+      { en: 'Finish something small today.', cn: '今天做完一件小事。' },
+      { en: 'You are allowed to change your mind with evidence.', cn: '有证据时，你可以改变主意。' },
+      { en: 'Being new at this is not the same as being bad at it.', cn: '刚学，不等于学不好。' },
+      { en: 'A deadline is a shape, not a verdict.', cn: '截止日期是形状，不是判决。' },
+      { en: 'Write it badly first.', cn: '先写烂，再写好。' }
+    ];
+
+    var dayIndex = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    var affirmIndex = dayIndex % AFFIRMATIONS.length;
+    var affirmLine = document.getElementById('affirmLine');
+    var affirmCn = document.getElementById('affirmCn');
+    var affirmNext = document.getElementById('affirmNext');
+
+    function showAffirm(index) {
+      var item = AFFIRMATIONS[(index + AFFIRMATIONS.length) % AFFIRMATIONS.length];
+      affirmLine.textContent = item.en;
+      affirmCn.textContent = item.cn;
+    }
+    showAffirm(affirmIndex);
+    if (affirmNext) {
+      affirmNext.addEventListener('click', function () {
+        affirmIndex += 1;
+        showAffirm(affirmIndex);
+      });
+    }
 
     var dateEl = document.getElementById('stripDate');
     var hourHost = document.getElementById('hourTiles');
