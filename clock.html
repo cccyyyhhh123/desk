@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clock — Yuhan's Desk</title>
+<meta name="description" content="An analogue clock, four world clocks and a 25/5 focus timer.">
+<link rel="icon" href="Images/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="Images/icon-180.png">
+<meta name="theme-color" content="#0b0b10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav__brand" href="index.html">Yuhan<span>.</span>Desk</a>
+  <div class="nav__links">
+    <a href="index.html">Home</a>
+    <a href="music.html">Music</a>
+    <a href="study.html">Study</a>
+    <a href="clock.html" aria-current="page">Clock</a>
+    <a href="ledger.html">Ledger</a>
+    <a href="tarot.html">Tarot</a>
+  </div>
+</nav>
+
+<main class="shell tool">
+  <header class="tool__head">
+    <h1>Clock</h1>
+    <p>The time where you are, the time where people you write to are, and a timer for
+       the twenty-five minutes before the next thing.</p>
+  </header>
+
+  <div class="clockgrid">
+    <section class="panel clockface">
+      <svg viewBox="0 0 300 300" role="img" aria-label="Analogue clock">
+        <circle cx="150" cy="150" r="138" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+        <circle cx="150" cy="150" r="120" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+        <g id="ticks"></g>
+        <line id="hourHand" x1="150" y1="150" x2="150" y2="86" stroke="#f4f4f7" stroke-width="7" stroke-linecap="round"/>
+        <line id="minHand" x1="150" y1="150" x2="150" y2="52" stroke="rgba(244,244,247,0.85)" stroke-width="4.5" stroke-linecap="round"/>
+        <line id="secHand" x1="150" y1="164" x2="150" y2="38" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="150" cy="150" r="5" fill="#a78bfa"/>
+      </svg>
+    </section>
+
+    <section class="panel">
+      <p class="digital" id="digital">--:--:--</p>
+      <p class="date" id="date">—</p>
+
+      <div class="watches" id="watches"></div>
+    </section>
+
+    <section class="panel timer">
+      <p class="timer__label" id="mode">Focus · 25 minutes</p>
+      <p class="timer__num" id="countdown">25:00</p>
+      <div class="row" style="justify-content:center">
+        <button class="btn btn--primary" id="toggle" type="button">Start</button>
+        <button class="btn" id="resetTimer" type="button">Reset</button>
+        <button class="btn btn--ghost" id="swap" type="button">Switch to break</button>
+      </div>
+      <p class="small muted" id="rounds" style="margin-top:10px">No rounds finished yet.</p>
+    </section>
+  </div>
+</main>
+
+<script>
+  /* ---------- the analogue face ---------- */
+  (function () {
+    const ticks = document.getElementById('ticks');
+    for (let i = 0; i < 60; i++) {
+      const long = i % 5 === 0;
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      const angle = (i / 60) * Math.PI * 2;
+      const r1 = long ? 112 : 118;
+      const r2 = 126;
+      line.setAttribute('x1', String(150 + Math.sin(angle) * r1));
+      line.setAttribute('y1', String(150 - Math.cos(angle) * r1));
+      line.setAttribute('x2', String(150 + Math.sin(angle) * r2));
+      line.setAttribute('y2', String(150 - Math.cos(angle) * r2));
+      line.setAttribute('stroke', long ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.16)');
+      line.setAttribute('stroke-width', long ? '2' : '1');
+      ticks.appendChild(line);
+    }
+  })();
+
+  const hourHand = document.getElementById('hourHand');
+  const minHand = document.getElementById('minHand');
+  const secHand = document.getElementById('secHand');
+  const digital = document.getElementById('digital');
+  const dateEl = document.getElementById('date');
+
+  function tick() {
+    const now = new Date();
+    const s = now.getSeconds();
+    const m = now.getMinutes() + s / 60;
+    const h = (now.getHours() % 12) + m / 60;
+
+    secHand.setAttribute('transform', 'rotate(' + (s * 6) + ' 150 150)');
+    minHand.setAttribute('transform', 'rotate(' + (m * 6) + ' 150 150)');
+    hourHand.setAttribute('transform', 'rotate(' + (h * 30) + ' 150 150)');
+
+    digital.textContent = now.toLocaleTimeString('en-GB', { hour12: false });
+    dateEl.textContent = now.toLocaleDateString('en-GB', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+    });
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  /* ---------- four cities ---------- */
+  const CITIES = [
+    { name: 'Danzhou', zone: 'Asia/Shanghai', note: 'where I am' },
+    { name: 'Bielefeld', zone: 'Europe/Berlin', note: 'the university' },
+    { name: 'London', zone: 'Europe/London', note: 'UTC baseline' },
+    { name: 'New York', zone: 'America/New_York', note: 'the other side' }
+  ];
+
+  const watches = document.getElementById('watches');
+  CITIES.forEach(function (city) {
+    const row = document.createElement('div');
+    row.className = 'watch';
+    const b = document.createElement('b');
+    b.textContent = city.name;
+    const span = document.createElement('span');
+    span.textContent = city.note;
+    const em = document.createElement('em');
+    em.dataset.zone = city.zone;
+    row.append(b, span, em);
+    watches.appendChild(row);
+  });
+
+  function paintCities() {
+    const now = new Date();
+    watches.querySelectorAll('em').forEach(function (em) {
+      em.textContent = now.toLocaleTimeString('en-GB', {
+        timeZone: em.dataset.zone, hour12: false, hour: '2-digit', minute: '2-digit'
+      });
+    });
+  }
+  paintCities();
+  setInterval(paintCities, 15000);
+
+  /* ---------- the focus timer ---------- */
+  (function () {
+    const FOCUS = 25 * 60;
+    const BREAK = 5 * 60;
+
+    let mode = 'focus';
+    let left = FOCUS;
+    let running = false;
+    let handle = 0;
+    let rounds = Number(localStorage.getItem('deskTimerRounds')) || 0;
+
+    const modeEl = document.getElementById('mode');
+    const countdown = document.getElementById('countdown');
+    const toggle = document.getElementById('toggle');
+    const resetBtn = document.getElementById('resetTimer');
+    const swap = document.getElementById('swap');
+    const roundsEl = document.getElementById('rounds');
+
+    function paint() {
+      const m = Math.floor(left / 60);
+      const s = left % 60;
+      countdown.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+      modeEl.textContent = (mode === 'focus' ? 'Focus · 25 minutes' : 'Break · 5 minutes');
+      toggle.textContent = running ? 'Pause' : (left === (mode === 'focus' ? FOCUS : BREAK) ? 'Start' : 'Resume');
+      roundsEl.textContent = rounds
+        ? rounds + (rounds === 1 ? ' round finished' : ' rounds finished')
+        : 'No rounds finished yet.';
+    }
+
+    function stop() {
+      running = false;
+      clearInterval(handle);
+      handle = 0;
+      paint();
+    }
+
+    function start() {
+      running = true;
+      handle = setInterval(function () {
+        left -= 1;
+        if (left <= 0) {
+          if (mode === 'focus') rounds += 1;
+          try { localStorage.setItem('deskTimerRounds', String(rounds)); } catch (e) {}
+          mode = mode === 'focus' ? 'break' : 'focus';
+          left = mode === 'focus' ? FOCUS : BREAK;
+          stop();
+          return;
+        }
+        paint();
+      }, 1000);
+      paint();
+    }
+
+    toggle.addEventListener('click', function () {
+      if (running) stop(); else start();
+    });
+    resetBtn.addEventListener('click', function () {
+      stop();
+      left = mode === 'focus' ? FOCUS : BREAK;
+      paint();
+    });
+    swap.addEventListener('click', function () {
+      stop();
+      mode = mode === 'focus' ? 'break' : 'focus';
+      left = mode === 'focus' ? FOCUS : BREAK;
+      paint();
+    });
+
+    paint();
+  })();
+</script>
+</body>
+</html>

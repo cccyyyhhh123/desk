@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study — Yuhan's Desk</title>
+<meta name="description" content="Flash cards for Programming III, Statistics, Data Analytics and Web Technologies. Flip, mark what you know, repeat what you do not.">
+<link rel="icon" href="Images/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="Images/icon-180.png">
+<meta name="theme-color" content="#0b0b10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav__brand" href="index.html">Yuhan<span>.</span>Desk</a>
+  <div class="nav__links">
+    <a href="index.html">Home</a>
+    <a href="music.html">Music</a>
+    <a href="study.html" aria-current="page">Study</a>
+    <a href="clock.html">Clock</a>
+    <a href="ledger.html">Ledger</a>
+    <a href="tarot.html">Tarot</a>
+  </div>
+</nav>
+
+<main class="shell tool">
+  <header class="tool__head">
+    <h1>Revision cards</h1>
+    <p>Eight cards per course. Read the question, say the answer out loud, then flip.
+       Mark it known and it leaves the round; mark it again and it comes back at the end.</p>
+  </header>
+
+  <section class="panel">
+    <div class="subjects" id="subjects" role="group" aria-label="Choose a subject"></div>
+
+    <div class="row small" style="justify-content:space-between; margin-bottom:6px">
+      <span class="muted" id="counter">—</span>
+      <span class="muted" id="knownTotal">—</span>
+    </div>
+    <div class="progress"><i id="bar"></i></div>
+
+    <div style="margin-top:16px">
+      <div class="flash" id="card" tabindex="0" role="button" aria-label="Show the answer">
+        <span class="flash__tag" id="tag">—</span>
+        <div>
+          <p class="flash__q" id="question">Loading…</p>
+          <p class="flash__a" id="answer" hidden></p>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:14px">
+        <button class="btn" id="flip" type="button">Show answer</button>
+        <button class="btn btn--primary" id="known" type="button">I know this</button>
+        <button class="btn" id="again" type="button">Show it again later</button>
+        <span class="spacer"></span>
+        <button class="btn btn--ghost" id="reset" type="button">Reset progress</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const SUBJECTS = {
+    cpp: {
+      name: 'Programming III',
+      code: 'C++',
+      cards: [
+        { q: 'What is the difference between passing by value and by reference?', a: 'By value copies the object, so the caller cannot see changes. By reference (&) binds to the caller\'s object, so writes go back to it — and it avoids a copy.' },
+        { q: 'Why mark a method const?', a: 'A const method promises not to modify the object, so it can be called on a const object and it documents intent. The compiler enforces it.' },
+        { q: 'What does RAII mean?', a: 'Resource Acquisition Is Initialisation: a resource is owned by an object, so it is released by the destructor — even when an exception is thrown.' },
+        { q: 'What is the difference between a pointer and a reference?', a: 'A reference always refers to something, cannot be reseated, and is never null. A pointer can be null, can be moved to another object, and needs an explicit *.' },
+        { q: 'When is a destructor called?', a: 'When the object goes out of scope, when delete is called on it, or when a container destroys its elements — in reverse order of construction.' },
+        { q: 'Why is std::vector preferred over a raw array?', a: 'It knows its size, grows safely, cleans up after itself, and works with the standard algorithms and iterators.' },
+        { q: 'What does virtual do on a method?', a: 'It allows the derived override to be called through a base pointer or reference — dynamic dispatch instead of compile-time binding.' },
+        { q: 'What is the difference between size_t and int?', a: 'size_t is an unsigned type meant for sizes and indices; using int can overflow or produce sign warnings when compared with .size().' }
+      ]
+    },
+    stats: {
+      name: 'Statistics',
+      code: 'MATH III',
+      cards: [
+        { q: 'Mean, median or mode — which one do outliers break?', a: 'The mean. The median only moves with rank, and the mode is unaffected by magnitude.' },
+        { q: 'What does a standard deviation of 0 mean?', a: 'Every observation is identical to the mean — the sample has no spread.' },
+        { q: 'State the 68–95–99.7 rule.', a: 'For a normal distribution, about 68% of values fall within 1 SD of the mean, 95% within 2, and 99.7% within 3.' },
+        { q: 'What is a p-value actually saying?', a: 'The probability of data at least this extreme if the null hypothesis were true. It is not the probability that the null is true.' },
+        { q: 'What does a 95% confidence interval mean?', a: 'If the experiment were repeated many times, about 95% of such intervals would contain the true parameter.' },
+        { q: 'Correlation is high — does that prove causation?', a: 'No. It can be coincidence, reverse causation, or a third variable driving both.' },
+        { q: 'What does the central limit theorem give you?', a: 'The sampling distribution of the mean tends to normal as the sample grows, whatever the underlying distribution — which is why t and z tests work.' },
+        { q: 'Type I versus Type II error?', a: 'Type I: rejecting a true null (false positive). Type II: failing to reject a false null (false negative). Power = 1 − Type II.' }
+      ]
+    },
+    data: {
+      name: 'Data Analytics & ML',
+      code: 'DA&ML',
+      cards: [
+        { q: 'Supervised versus unsupervised learning?', a: 'Supervised has labelled targets to predict; unsupervised looks for structure without labels (clustering, dimensionality reduction).' },
+        { q: 'Why split into training and test sets?', a: 'To measure how the model behaves on data it has not seen — otherwise the score measures memorisation.' },
+        { q: 'What does overfitting look like?', a: 'Training error keeps falling while validation error rises. The model has learned the noise of the training set.' },
+        { q: 'What is in a confusion matrix?', a: 'True positives, true negatives, false positives and false negatives — the four outcomes a classifier can produce.' },
+        { q: 'Precision versus recall?', a: 'Precision = of the ones you flagged, how many were right. Recall = of the ones that were right, how many you caught.' },
+        { q: 'Why scale features before KNN or gradient descent?', a: 'Distance and step size depend on units; a feature measured in thousands would otherwise dominate one measured in tenths.' },
+        { q: 'How does KNN classify a point?', a: 'It looks at the k nearest training points and takes the majority label (or the average for regression).' },
+        { q: 'What is a learning rate doing?', a: 'It sets how far each gradient step moves the weights — too small crawls, too large overshoots or diverges.' }
+      ]
+    },
+    web: {
+      name: 'Web Technologies',
+      code: 'WEB',
+      cards: [
+        { q: 'Describe the CSS box model in one sentence.', a: 'Every element is a box of content plus padding plus border plus margin, and box-sizing decides whether width includes the first three.' },
+        { q: 'When does a flex item overflow its container?', a: 'When its min-width is auto and its content cannot shrink — set min-width: 0 to let it shrink properly.' },
+        { q: 'Name three semantic elements and what they say.', a: 'header, main, nav, article, section, footer, aside — they describe the role of the content, not its look.' },
+        { q: 'How does CSS specificity rank selectors?', a: 'Inline styles beat ids, ids beat classes and attributes, classes beat element selectors; !important overrides all of it (and should be rare).' },
+        { q: 'What is event bubbling?', a: 'An event fires on the target and then on each ancestor up to the document — which is why a listener on a parent sees clicks on its children.' },
+        { q: 'localStorage versus sessionStorage?', a: 'Both are key–value string stores in the browser; localStorage survives closing the tab, sessionStorage does not.' },
+        { q: 'What is a media query for?', a: 'Applying different CSS depending on the viewport or device features — width, orientation, pointer type, prefers-reduced-motion.' },
+        { q: 'Why add aria-label or a <label>?', a: 'A visual hint does not exist for a screen reader; the accessible name has to be written in the markup.' }
+      ]
+    }
+  };
+
+  const STORE = 'deskStudyProgress';
+
+  function loadProgress() {
+    try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; }
+  }
+  function saveProgress(p) {
+    try { localStorage.setItem(STORE, JSON.stringify(p)); } catch (e) {}
+  }
+
+  const progress = loadProgress();
+  let current = 'cpp';
+  let order = [];
+  let cursor = 0;
+  let flipped = false;
+
+  const el = {
+    subjects: document.getElementById('subjects'),
+    tag: document.getElementById('tag'),
+    question: document.getElementById('question'),
+    answer: document.getElementById('answer'),
+    card: document.getElementById('card'),
+    flip: document.getElementById('flip'),
+    known: document.getElementById('known'),
+    again: document.getElementById('again'),
+    reset: document.getElementById('reset'),
+    counter: document.getElementById('counter'),
+    knownTotal: document.getElementById('knownTotal'),
+    bar: document.getElementById('bar')
+  };
+
+  function cardId(subject, index) { return subject + ':' + index; }
+
+  function buildSubjects() {
+    el.subjects.replaceChildren();
+    Object.keys(SUBJECTS).forEach(function (key) {
+      const subject = SUBJECTS[key];
+      const total = subject.cards.length;
+      const known = subject.cards.filter(function (_, i) {
+        return progress[cardId(key, i)] === 'known';
+      }).length;
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'subject';
+      button.setAttribute('aria-pressed', String(key === current));
+      const b = document.createElement('b');
+      b.textContent = subject.name;
+      const s = document.createElement('span');
+      s.textContent = subject.code + ' · ' + known + '/' + total + ' known';
+      button.append(b, s);
+      button.addEventListener('click', function () { switchSubject(key); });
+      el.subjects.appendChild(button);
+    });
+  }
+
+  /* start each subject with the cards you do not know yet, in a fresh order */
+  function buildOrder() {
+    const subject = SUBJECTS[current];
+    const unknown = [];
+    const known = [];
+    subject.cards.forEach(function (_, i) {
+      (progress[cardId(current, i)] === 'known' ? known : unknown).push(i);
+    });
+    unknown.sort(function () { return Math.random() - 0.5; });
+    order = unknown.concat(known);
+    cursor = 0;
+  }
+
+  function switchSubject(key) {
+    current = key;
+    buildOrder();
+    render();
+    buildSubjects();
+  }
+
+  function render() {
+    const subject = SUBJECTS[current];
+    const total = subject.cards.length;
+    const known = subject.cards.filter(function (_, i) {
+      return progress[cardId(current, i)] === 'known';
+    }).length;
+
+    el.counter.textContent = (cursor + 1) + ' / ' + total + ' · ' + subject.name;
+    el.knownTotal.textContent = known + ' of ' + total + ' known';
+    el.bar.style.width = (known / total * 100).toFixed(1) + '%';
+
+    const index = order[cursor];
+    const card = subject.cards[index];
+    el.tag.textContent = subject.code + ' · card ' + (cursor + 1);
+    el.question.textContent = card.q;
+    el.answer.textContent = card.a;
+    el.answer.hidden = !flipped;
+    el.flip.textContent = flipped ? 'Hide answer' : 'Show answer';
+    el.card.setAttribute('aria-label', flipped ? 'Hide the answer' : 'Show the answer');
+
+    const done = progress[cardId(current, index)] === 'known';
+    el.known.disabled = false;
+    el.known.textContent = done ? 'Known ✓' : 'I know this';
+  }
+
+  function flip() {
+    flipped = !flipped;
+    render();
+  }
+
+  function advance() {
+    flipped = false;
+    cursor = (cursor + 1) % order.length;
+    render();
+  }
+
+  el.card.addEventListener('click', flip);
+  el.card.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); flip(); }
+  });
+  el.flip.addEventListener('click', flip);
+
+  el.known.addEventListener('click', function () {
+    const id = cardId(current, order[cursor]);
+    progress[id] = 'known';
+    saveProgress(progress);
+    buildSubjects();
+    advance();
+  });
+
+  el.again.addEventListener('click', function () {
+    const id = cardId(current, order[cursor]);
+    delete progress[id];
+    saveProgress(progress);
+    buildSubjects();
+    advance();
+  });
+
+  el.reset.addEventListener('click', function () {
+    Object.keys(progress).forEach(function (key) {
+      if (key.indexOf(current + ':') === 0) delete progress[key];
+    });
+    saveProgress(progress);
+    buildOrder();
+    buildSubjects();
+    render();
+  });
+
+  document.addEventListener('keydown', function (event) {
+    const tag = (event.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea') return;
+    if (event.key === ' ') { event.preventDefault(); flip(); }
+    if (event.key === 'ArrowRight') { el.known.click(); }
+    if (event.key === 'ArrowLeft') { el.again.click(); }
+  });
+
+  buildSubjects();
+  buildOrder();
+  render();
+</script>
+</body>
+</html>

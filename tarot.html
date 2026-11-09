@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tarot — Yuhan's Desk</title>
+<meta name="description" content="Draw three cards from the twenty-two major arcana — past, present, future.">
+<link rel="icon" href="Images/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="Images/icon-180.png">
+<meta name="theme-color" content="#0b0b10">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav__brand" href="index.html">Yuhan<span>.</span>Desk</a>
+  <div class="nav__links">
+    <a href="index.html">Home</a>
+    <a href="music.html">Music</a>
+    <a href="study.html">Study</a>
+    <a href="clock.html">Clock</a>
+    <a href="ledger.html">Ledger</a>
+    <a href="tarot.html" aria-current="page">Tarot</a>
+  </div>
+</nav>
+
+<main class="shell tool">
+  <header class="tool__head">
+    <h1>Three cards</h1>
+    <p>Past, present, future — drawn from the twenty-two major arcana. It is a way to
+       put a question into words, not a prediction: nothing here knows anything you do not.</p>
+  </header>
+
+  <section class="panel">
+    <div class="tarot-controls">
+      <button class="btn btn--primary" id="draw" type="button">Shuffle and draw</button>
+      <button class="btn btn--ghost" id="flipAll" type="button">Turn them over</button>
+      <span class="muted small" id="status" role="status" aria-live="polite">A fresh deck, face down.</span>
+    </div>
+
+    <div class="spread" id="spread"></div>
+  </section>
+</main>
+
+<script>
+  const CARDS = [
+    { n: 0,  name: 'The Fool',           glyph: '✧', meaning: 'A beginning taken without a map. Trust the step, not the plan.' },
+    { n: 1,  name: 'The Magician',       glyph: '✦', meaning: 'You already have the tools. The question is whether you will use them.' },
+    { n: 2,  name: 'The High Priestess', glyph: '☾', meaning: 'Something is known but not yet said. Listen before acting.' },
+    { n: 3,  name: 'The Empress',        glyph: '⚘', meaning: 'Growth that needs tending rather than pushing.' },
+    { n: 4,  name: 'The Emperor',        glyph: '♛', meaning: 'Structure, rules, the frame that makes the work possible.' },
+    { n: 5,  name: 'The Hierophant',     glyph: '✚', meaning: 'Tradition and teaching. What has been done well before you.' },
+    { n: 6,  name: 'The Lovers',         glyph: '♡', meaning: 'A choice made from what you value, not from what is convenient.' },
+    { n: 7,  name: 'The Chariot',        glyph: '⚑', meaning: 'Momentum held in two directions at once — keep the reins.' },
+    { n: 8,  name: 'Strength',           glyph: '∞', meaning: 'Patience used as force. The gentler hand wins.' },
+    { n: 9,  name: 'The Hermit',         glyph: '☥', meaning: 'Withdraw to think. The answer is quieter than the question.' },
+    { n: 10, name: 'Wheel of Fortune',   glyph: '☸', meaning: 'The part that turns without you. Work with the turn.' },
+    { n: 11, name: 'Justice',            glyph: '⚖', meaning: 'Weigh it honestly; the scale does not care what you hoped.' },
+    { n: 12, name: 'The Hanged Man',     glyph: '⚓', meaning: 'A pause that is not wasted. Look at it upside down.' },
+    { n: 13, name: 'Death',              glyph: '☠', meaning: 'An ending that makes room. Not a loss, a close.' },
+    { n: 14, name: 'Temperance',         glyph: '⚗', meaning: 'Mixing two things carefully until neither dominates.' },
+    { n: 15, name: 'The Devil',          glyph: '⛓', meaning: 'A habit worn as a chain. Check whether the lock is real.' },
+    { n: 16, name: 'The Tower',          glyph: '⚡', meaning: 'A structure breaking so the ground shows through.' },
+    { n: 17, name: 'The Star',           glyph: '★', meaning: 'Recovery, quietly. Something to aim at again.' },
+    { n: 18, name: 'The Moon',           glyph: '☽', meaning: 'Half-lit. Do not decide from a shape you cannot see.' },
+    { n: 19, name: 'The Sun',            glyph: '☀', meaning: 'Clarity, plainly. Say the thing out loud.' },
+    { n: 20, name: 'Judgement',          glyph: '⚜', meaning: 'A call to account — by you, first of all.' },
+    { n: 21, name: 'The World',          glyph: '❂', meaning: 'A loop closed. Take the credit, then start the next one.' }
+  ];
+
+  const POSITIONS = ['Past', 'Present', 'Future'];
+  const spread = document.getElementById('spread');
+  const status = document.getElementById('status');
+  const drawBtn = document.getElementById('draw');
+  const flipAll = document.getElementById('flipAll');
+
+  let current = [];
+  let revealed = [false, false, false];
+
+  function shuffled() {
+    const deck = CARDS.slice();
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    return deck;
+  }
+
+  function render() {
+    spread.replaceChildren();
+    current.forEach(function (card, i) {
+      const figure = document.createElement('figure');
+
+      const face = document.createElement('div');
+      face.className = 'cardface' + (revealed[i] ? '' : ' is-back');
+      face.tabIndex = 0;
+      face.setAttribute('role', 'button');
+      face.setAttribute('aria-label', revealed[i] ? card.name : 'Turn over the ' + POSITIONS[i].toLowerCase() + ' card');
+
+      const num = document.createElement('span');
+      num.className = 'num';
+      num.textContent = revealed[i] ? '· ' + String(card.n).padStart(2, '0') + ' ·' : '?';
+
+      const glyph = document.createElement('span');
+      glyph.className = 'glyph';
+      glyph.textContent = revealGlyph(card, revealed[i]);
+
+      const name = document.createElement('span');
+      name.className = 'name';
+      name.textContent = revealed[i] ? card.name : 'hidden';
+
+      face.append(num, glyph, name);
+
+      function flip() {
+        revealed[i] = !revealed[i];
+        render();
+        updateStatus();
+      }
+      face.addEventListener('click', flip);
+      face.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); flip(); }
+      });
+
+      const caption = document.createElement('figcaption');
+      const strong = document.createElement('b');
+      strong.textContent = POSITIONS[i] + (revealed[i] ? ' · ' + card.name : '');
+      const text = document.createElement('span');
+      text.textContent = revealed[i] ? card.meaning : 'Turn it over to read it.';
+      caption.append(strong, text);
+
+      figure.append(face, caption);
+      spread.appendChild(figure);
+    });
+  }
+
+  function revealGlyph(card, shown) {
+    return shown ? card.glyph : '✧';
+  }
+
+  function updateStatus() {
+    const count = revealed.filter(Boolean).length;
+    status.textContent = count === 3
+      ? 'All three are open.'
+      : count === 0
+        ? 'Three cards, face down. Click one to turn it over.'
+        : count + ' of 3 turned over.';
+  }
+
+  function draw() {
+    current = shuffled().slice(0, 3);
+    revealed = [false, false, false];
+    render();
+    updateStatus();
+    try {
+      localStorage.setItem('deskTarotLast', JSON.stringify({
+        names: current.map(function (card) { return card.name; }),
+        at: Date.now()
+      }));
+    } catch (e) {}
+  }
+
+  drawBtn.addEventListener('click', draw);
+  flipAll.addEventListener('click', function () {
+    const allOpen = revealed.every(Boolean);
+    revealed = revealed.map(function () { return !allOpen; });
+    render();
+    updateStatus();
+  });
+
+  draw();
+</script>
+</body>
+</html>
