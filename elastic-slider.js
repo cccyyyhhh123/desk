@@ -20,15 +20,22 @@
     var value = clamp(opts.value == null ? 50 : opts.value, min, max);
 
     root.classList.add('es');
-    root.innerHTML =
-      '<span class="es__icon" aria-hidden="true">' + iconLow() + '</span>' +
+    if (opts.single) root.classList.add('es--single');
+
+    /* the reference this follows has one badge on the left and nothing on the
+       right, so the two speaker icons become optional */
+    var leftIcon = opts.single
+      ? '<span class="es__icon es__icon--badge" aria-hidden="true">' + iconMusic() + '</span>'
+      : '<span class="es__icon" aria-hidden="true">' + iconLow() + '</span>';
+
+    root.innerHTML = leftIcon +
       '<span class="es__rail" role="slider" tabindex="0">' +
         '<span class="es__track"></span>' +
         '<span class="es__fill"></span>' +
         '<span class="es__thumb"></span>' +
         '<span class="es__bubble" aria-hidden="true"></span>' +
       '</span>' +
-      '<span class="es__icon" aria-hidden="true">' + iconHigh() + '</span>';
+      (opts.single ? '' : '<span class="es__icon" aria-hidden="true">' + iconHigh() + '</span>');
 
     var rail = root.querySelector('.es__rail');
     var track = root.querySelector('.es__track');
@@ -163,6 +170,11 @@
       get value() { return value; },
       set: function (next) { setValue(next); }
     };
+  }
+
+  function iconMusic() {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M9 17V6l10-2v11"/><circle cx="6.5" cy="17.5" r="2.5"/><circle cx="16.5" cy="15.5" r="2.5"/></svg>';
   }
 
   function iconLow() {
