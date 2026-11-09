@@ -34,6 +34,22 @@
        Mark it known and it leaves the round; mark it again and it comes back at the end.</p>
   </header>
 
+  <section class="panel canvas-bar">
+    <div class="row" style="justify-content:space-between; align-items:flex-start">
+      <div>
+        <h2>Canvas</h2>
+        <p class="hint small" style="margin-bottom:0">Each course below opens its own page on
+          <span class="mono">learn.hibiuh.edu.cn</span>. These are plain links: reading your
+          assignments here would need an API token, and that token should not live in a public page.</p>
+      </div>
+      <div class="row" style="gap:8px">
+        <a class="btn btn--ghost" href="https://learn.hibiuh.edu.cn/" target="_blank" rel="noopener">Dashboard ↗</a>
+        <a class="btn btn--ghost" href="https://learn.hibiuh.edu.cn/calendar" target="_blank" rel="noopener">Calendar ↗</a>
+        <a class="btn btn--ghost" href="https://learn.hibiuh.edu.cn/grades" target="_blank" rel="noopener">Grades ↗</a>
+      </div>
+    </div>
+  </section>
+
   <section class="panel">
     <div class="subjects" id="subjects" role="group" aria-label="Choose a subject"></div>
 
@@ -59,6 +75,9 @@
         <span class="spacer"></span>
         <button class="btn btn--ghost" id="reset" type="button">Reset progress</button>
       </div>
+      <p class="small" style="margin-top:12px">
+        <a id="courseLink" href="https://learn.hibiuh.edu.cn/" target="_blank" rel="noopener">Open this course in Canvas ↗</a>
+      </p>
     </div>
   </section>
 </main>
@@ -69,6 +88,7 @@
     cpp: {
       name: 'Programming III',
       code: 'C++',
+      canvas: 'https://learn.hibiuh.edu.cn/courses/146',
       cards: [
         { q: 'What is the difference between passing by value and by reference?', a: 'By value copies the object, so the caller cannot see changes. By reference (&) binds to the caller\'s object, so writes go back to it — and it avoids a copy.' },
         { q: 'Why mark a method const?', a: 'A const method promises not to modify the object, so it can be called on a const object and it documents intent. The compiler enforces it.' },
@@ -83,6 +103,7 @@
     stats: {
       name: 'Statistics',
       code: 'MATH III',
+      canvas: 'https://learn.hibiuh.edu.cn/courses/140',
       cards: [
         { q: 'Mean, median or mode — which one do outliers break?', a: 'The mean. The median only moves with rank, and the mode is unaffected by magnitude.' },
         { q: 'What does a standard deviation of 0 mean?', a: 'Every observation is identical to the mean — the sample has no spread.' },
@@ -97,6 +118,7 @@
     data: {
       name: 'Data Analytics & ML',
       code: 'DA&ML',
+      canvas: 'https://learn.hibiuh.edu.cn/courses/143',
       cards: [
         { q: 'Supervised versus unsupervised learning?', a: 'Supervised has labelled targets to predict; unsupervised looks for structure without labels (clustering, dimensionality reduction).' },
         { q: 'Why split into training and test sets?', a: 'To measure how the model behaves on data it has not seen — otherwise the score measures memorisation.' },
@@ -111,6 +133,7 @@
     web: {
       name: 'Web Technologies',
       code: 'WEB',
+      canvas: 'https://learn.hibiuh.edu.cn/courses/149',
       cards: [
         { q: 'Describe the CSS box model in one sentence.', a: 'Every element is a box of content plus padding plus border plus margin, and box-sizing decides whether width includes the first three.' },
         { q: 'When does a flex item overflow its container?', a: 'When its min-width is auto and its content cannot shrink — set min-width: 0 to let it shrink properly.' },
@@ -218,6 +241,12 @@
     el.answer.hidden = !flipped;
     el.flip.textContent = flipped ? 'Hide answer' : 'Show answer';
     el.card.setAttribute('aria-label', flipped ? 'Hide the answer' : 'Show the answer');
+
+    const link = document.getElementById('courseLink');
+    if (link) {
+      link.href = subject.canvas;
+      link.textContent = 'Open ' + subject.name + ' in Canvas ↗';
+    }
 
     const done = progress[cardId(current, index)] === 'known';
     el.known.disabled = false;
