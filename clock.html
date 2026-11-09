@@ -71,7 +71,10 @@
         <button class="cw__btn" id="resetTimer" type="button">Reset</button>
       </div>
       <div class="cw__presets" id="presets" role="group" aria-label="Countdown presets"></div>
-      <p class="cw__rounds" id="rounds">Pick a length, or start with twenty-five.</p>
+      <div class="cw__meta">
+        <span class="cw__rounds" id="rounds">No rounds finished yet.</span>
+        <button class="cw__mini" id="clearRounds" type="button" hidden>Clear</button>
+      </div>
     </div>
 
     <div class="cw__chips">
@@ -233,6 +236,7 @@
     let running = false;
     let handle = 0;
     let finished = false;
+    let rounds = Number(localStorage.getItem('deskTimerRounds')) || 0;
 
     const modeEl = document.getElementById('mode');
     const countdown = document.getElementById('countdown');
@@ -240,6 +244,7 @@
     const resetBtn = document.getElementById('resetTimer');
     const presetsEl = document.getElementById('presets');
     const roundsEl = document.getElementById('rounds');
+    const clearBtn = document.getElementById('clearRounds');
 
     function paint() {
       const m = Math.floor(left / 60);
@@ -247,9 +252,10 @@
       countdown.textContent = m + ':' + (s < 10 ? '0' : '') + s;
       modeEl.textContent = 'Countdown · ' + minutes + (minutes === 1 ? ' minute' : ' minutes');
       toggle.textContent = running ? 'Pause' : (finished ? 'Again' : (left === minutes * 60 ? 'Start' : 'Resume'));
-      roundsEl.textContent = finished
-        ? 'Time is up. Pick another length, or go again.'
-        : 'Pick a length, or start with twenty-five.';
+      roundsEl.textContent = rounds
+        ? rounds + (rounds === 1 ? ' round finished' : ' rounds finished') + (finished ? ' · time is up' : '')
+        : (finished ? 'Time is up. That was the first round.' : 'No rounds finished yet.');
+      clearBtn.hidden = rounds === 0;
 
       Array.prototype.forEach.call(presetsEl.children, function (chip) {
         chip.setAttribute('aria-pressed', String(Number(chip.dataset.min) === minutes));
@@ -274,6 +280,8 @@
         if (left <= 0) {
           left = 0;
           finished = true;
+          rounds += 1;
+          try { localStorage.setItem('deskTimerRounds', String(rounds)); } catch (e) {}
           stop();
           document.title = "Time is up — Yuhan's Desk";
           return;
@@ -308,6 +316,11 @@
       stop();
       left = minutes * 60;
       finished = false;
+      paint();
+    });
+    clearBtn.addEventListener('click', function () {
+      rounds = 0;
+      try { localStorage.setItem('deskTimerRounds', '0'); } catch (e) {}
       paint();
     });
 

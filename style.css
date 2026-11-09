@@ -312,7 +312,14 @@ img, svg, canvas { display: block; max-width: 100%; }
 .cw__btn:active { transform: scale(0.97); }
 .cw__btn--dark { background: #17171d; border-color: transparent; color: #fff; }
 .cw__btn--dark:hover { background: #2a2a36; }
-.cw__rounds { margin-top: 12px; font-size: 0.78rem; color: rgba(23, 23, 29, 0.5); }
+.cw__meta { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px; }
+.cw__rounds { font-size: 0.78rem; color: rgba(23, 23, 29, 0.5); }
+.cw__mini {
+  border: 0; background: none; padding: 0; cursor: pointer;
+  font-size: 0.75rem; color: rgba(23, 23, 29, 0.42);
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.cw__mini:hover { color: #17171d; }
 
 .cw__presets { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 16px; }
 .cw__preset {
