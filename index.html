@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=17">
+<link rel="stylesheet" href="style.css?v=19">
 </head>
 <body>
 
@@ -38,9 +38,8 @@
 
     <dl class="strip" id="strip">
       <div><dt>Today</dt><dd id="stripDate">—</dd></div>
-      <div><dt>Ledger balance</dt><dd id="stripBalance">—</dd></div>
-      <div><dt>Cards known</dt><dd id="stripStudy">—</dd></div>
-      <div><dt>Mindful today</dt><dd id="stripMindful">—</dd></div>
+      <div><dt>Now</dt><dd class="strip__clock"><span id="stripTime"></span></dd></div>
+      <div><dt>Danzhou</dt><dd id="stripTemp">—</dd></div>
     </dl>
   </section>
 
@@ -99,7 +98,68 @@
     </p>
   </section></main>
 
-<script>window.__DESK_BUILD__ = 'v17';</script>
+<script>
+  (function () {
+    var hour = new Date().getHours();
+    var greeting = hour < 5 ? 'Still up' : hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('greeting').textContent = greeting;
+
+    /* date and time, both kept current on the same tick */
+    var dateEl = document.getElementById('stripDate');
+    var timeHost = document.getElementById('stripTime');
+
+    var clock = timeHost && window.Counter
+      ? window.Counter.mount(timeHost, { digits: 4, separatorAt: 2, blink: true, label: 'Time' })
+      : null;
+
+    function tick() {
+      var now = new Date();
+      dateEl.textContent = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+
+      var hours = String(now.getHours()).padStart(2, '0');
+      var minutes = String(now.getMinutes()).padStart(2, '0');
+      if (clock) clock.set(hours + minutes);
+      else if (timeHost) timeHost.textContent = hours + ':' + minutes;
+    }
+    tick();
+    setInterval(tick, 1000);
+
+    /* the temperature, from the same place the weather page reads */
+    var tempEl = document.getElementById('stripTemp');
+    var CONDITIONS = [
+      [0, 'clear'], [2, 'mostly clear'], [3, 'overcast'], [48, 'fog'], [57, 'drizzle'],
+      [67, 'rain'], [77, 'snow'], [82, 'showers'], [86, 'snow showers'], [99, 'storm']
+    ];
+    function condition(code) {
+      for (var i = 0; i < CONDITIONS.length; i++) {
+        if (code <= CONDITIONS[i][0]) return CONDITIONS[i][1];
+      }
+      return '';
+    }
+
+    function loadTemp() {
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=19.52&longitude=109.57' +
+            '&current=temperature_2m,weather_code&timezone=Asia%2FShanghai', { cache: 'no-store' })
+        .then(function (response) {
+          if (!response.ok) throw new Error('http ' + response.status);
+          return response.json();
+        })
+        .then(function (data) {
+          var now = data.current;
+          tempEl.textContent = Math.round(now.temperature_2m) + '°';
+          var tail = document.createElement('span');
+          tail.className = 'strip__tail';
+          tail.textContent = ' · ' + condition(now.weather_code);
+          tempEl.appendChild(tail);
+        })
+        .catch(function () {
+          if (!tempEl.textContent || tempEl.textContent === '—') tempEl.textContent = 'offline';
+        });
+    }
+    loadTemp();
+    setInterval(loadTemp, 10 * 60 * 1000);
+  })();
+</script>
 <script src="nav.js?v=17"></script>
 <script>
   (function () {
