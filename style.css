@@ -192,7 +192,7 @@ img, svg, canvas { display: block; max-width: 100%; }
 }
 .ct__col {
   position: relative; display: inline-block;
-  width: 0.66em; height: 1em; overflow: hidden;
+  width: 0.66em; height: 1.14em; overflow: hidden;
 }
 .ct__strip {
   position: absolute; left: 0; top: 0; width: 100%;
@@ -200,7 +200,7 @@ img, svg, canvas { display: block; max-width: 100%; }
   transition: transform 0.55s cubic-bezier(0.34, 1.28, 0.64, 1);
   will-change: transform;
 }
-.ct__digit { display: grid; place-items: center; height: 1em; line-height: 1; }
+.ct__digit { display: grid; place-items: center; height: 1.14em; line-height: 1; }
 .ct__sep { display: inline-block; padding: 0 0.06em; color: var(--muted); }
 .ct__sep.is-blink { animation: ct-blink 2s steps(1, end) infinite; }
 @keyframes ct-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.25; } }
@@ -749,7 +749,7 @@ body, .nav, .panel, .card, .metric, .rail__block, .watch, .stat,
   font-variant-numeric: tabular-nums;
   color: var(--ink);
 }
-.anchor__value .ct__col { width: 0.58em; height: 1em; }
+.anchor__value .ct__col { width: 0.58em; height: 1.14em; }
 .anchor__value .ct__sep {
   font-size: 0.52em; line-height: 1; padding: 0 0.06em;
   color: var(--muted-2); transform: translateY(-0.16em);
@@ -784,6 +784,15 @@ body, .nav, .panel, .card, .metric, .rail__block, .watch, .stat,
   font-variant-numeric: tabular-nums;
 }
 .metric__note { font-size: 0.74rem; color: var(--muted); }
+.metric__meta { font-size: 0.74rem; color: var(--muted); }
+
+/* the study figure leads the row: accent edge, bigger number */
+.metric--primary {
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--line));
+  background: color-mix(in srgb, var(--accent) 7%, var(--panel));
+}
+.metric--primary .metric__value { font-size: clamp(1.9rem, 3.4vw, 2.6rem); }
+.metric--primary .metric__track { height: 4px; }
 .metric__track {
   height: 3px; border-radius: 999px; background: var(--line);
   overflow: hidden; margin-top: 2px;

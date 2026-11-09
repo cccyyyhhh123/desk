@@ -65,7 +65,7 @@
 
       for (var index = 0; index < digits; index++) {
         var digit = Number(text.charAt(index)) || 0;
-        strips[index].style.transform = 'translateY(' + (-digit) + 'em)';
+        strips[index].style.transform = 'translateY(' + (-digit * 10) + '%)';
       }
 
       host.setAttribute('aria-label', opts.label ? opts.label + ' ' + text : text);

@@ -11,8 +11,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=29">
-<script src="theme.js?v=29"></script>
+<link rel="stylesheet" href="style.css?v=30">
+<script src="theme.js?v=30"></script>
 </head>
 <body>
 
@@ -53,15 +53,16 @@
     </figure>
 
     <div class="metrics">
-      <a class="metric" href="ledger.html">
-        <span class="metric__label">Ledger balance</span>
-        <span class="metric__value" id="metricBalance">—</span>
-        <span class="metric__note" id="metricLedgerNote">no book yet</span>
-      </a>
-      <a class="metric" href="study.html">
+      <a class="metric metric--primary" href="study.html">
         <span class="metric__label">Cards known</span>
         <span class="metric__value" id="metricCards">—</span>
+        <span class="metric__meta" id="metricCardsNote">across four courses</span>
         <span class="metric__track"><i id="metricCardsBar" style="width:0%"></i></span>
+      </a>
+      <a class="metric" href="study.html">
+        <span class="metric__label">Revision plan</span>
+        <span class="metric__value" id="metricPlan">—</span>
+        <span class="metric__note" id="metricPlanNote">no projects yet</span>
       </a>
       <a class="metric" href="tarot.html">
         <span class="metric__label">Mindful today</span>
@@ -101,8 +102,8 @@
   </aside>
 </main>
 
-<script src="counter.js?v=29"></script>
-<script src="nav.js?v=29"></script>
+<script src="counter.js?v=30"></script>
+<script src="nav.js?v=30"></script>
 <script>
   (function () {
     var hour = new Date().getHours();
@@ -170,19 +171,22 @@
     }
 
     try {
-      var books = JSON.parse(localStorage.getItem('shareBillStorage')) || {};
-      var total = 0, entries = 0;
-      Object.keys(books).forEach(function (key) {
-        (books[key] || []).forEach(function (entry) {
-          entries += 1;
-          total += entry.type === 'deposit' ? Number(entry.money) : -Number(entry.money);
+      var projects = JSON.parse(localStorage.getItem('deskProjects')) || [];
+      var sessions = 0, done = 0;
+      projects.forEach(function (project) {
+        (project.plan || []).forEach(function (row) {
+          sessions += 1;
+          if (row.done) done += 1;
         });
       });
-      document.getElementById('metricBalance').textContent = num(total, 2);
-      document.getElementById('metricLedgerNote').textContent = entries
-        ? entries + (entries === 1 ? ' entry' : ' entries') : 'no entries yet';
+      document.getElementById('metricPlan').textContent = projects.length
+        ? done + ' / ' + sessions
+        : '—';
+      document.getElementById('metricPlanNote').textContent = projects.length
+        ? (projects.length === 1 ? '1 project' : projects.length + ' projects') + ' · sessions done'
+        : 'no projects yet';
     } catch (e) {
-      document.getElementById('metricBalance').textContent = '—';
+      document.getElementById('metricPlan').textContent = '—';
     }
 
     try {
@@ -191,6 +195,8 @@
       Object.keys(progress).forEach(function (id) { if (progress[id] === 'known') known += 1; });
       document.getElementById('metricCards').textContent = known + ' / 32';
       document.getElementById('metricCardsBar').style.width = (known / 32 * 100).toFixed(1) + '%';
+      document.getElementById('metricCardsNote').textContent =
+        (32 - known) + ' to go · across four courses';
     } catch (e) {
       document.getElementById('metricCards').textContent = '0 / 32';
     }
