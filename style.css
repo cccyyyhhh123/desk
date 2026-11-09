@@ -371,25 +371,93 @@ td.num.neg { color: var(--muted); }
 .spread { display: grid; grid-template-columns: repeat(3, 11.5rem); gap: 16px; justify-content: center; }
 .spread figure { margin: 0; display: grid; gap: 10px; }
 .cardface {
-  position: relative; aspect-ratio: 3 / 5; border-radius: 14px;
-  background: linear-gradient(160deg, #241d42, #17131f 55%, #1f1738);
-  border: 1px solid var(--line-2);
-  display: grid; place-items: center; gap: 6px; padding: 12px;
-  cursor: pointer; overflow: hidden;
-  transition: transform 0.3s cubic-bezier(0.34, 1.3, 0.64, 1), border-color 0.25s ease;
+  position: relative; display: grid; grid-template-rows: auto 1fr auto;
+  gap: 8px; padding: 14px 10px 12px;
+  aspect-ratio: 5 / 8; border-radius: 12px;
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(139, 118, 255, 0.16), transparent 62%),
+    linear-gradient(165deg, #1c1738 0%, #100d1a 58%, #1a1330 100%);
+  border: 1px solid rgba(196, 181, 253, 0.3);
+  color: #e9e4ff; cursor: pointer; overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.34, 1.3, 0.64, 1), border-color 0.25s ease, box-shadow 0.3s ease;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
 }
-.cardface:hover { transform: translateY(-4px); border-color: rgba(167, 139, 250, 0.55); }
-.cardface::after {
-  content: ""; position: absolute; inset: 8px; border-radius: 10px;
-  border: 1px solid rgba(167, 139, 250, 0.22); pointer-events: none;
+.cardface::before {
+  content: ""; position: absolute; inset: 6px; border-radius: 8px;
+  border: 1px solid rgba(196, 181, 253, 0.16); pointer-events: none;
 }
-.cardface .glyph { font-size: 2.6rem; color: var(--accent); line-height: 1; }
-.cardface .name { font-size: 0.86rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-.cardface .num { position: absolute; top: 12px; left: 14px; font-family: var(--mono); font-size: 0.72rem; color: var(--muted-2); }
-.cardface.is-back .glyph, .cardface.is-back .name { opacity: 0.25; }
-figcaption { font-size: 0.88rem; color: var(--muted); }
-figcaption b { color: var(--ink); font-weight: 600; display: block; margin-bottom: 2px; }
+.cardface:hover {
+  transform: translateY(-5px);
+  border-color: rgba(233, 213, 168, 0.55);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.55);
+}
+.cardface:focus-visible { outline: 2px solid rgba(196, 181, 253, 0.8); outline-offset: 3px; }
 
+.cardface__top {
+  text-align: center; font-family: var(--mono); font-size: 0.6rem;
+  letter-spacing: 0.2em; color: rgba(233, 213, 168, 0.8);
+}
+.cardface__seal {
+  align-self: center; justify-self: center;
+  width: 66%; aspect-ratio: 1; display: grid; place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(196, 181, 253, 0.24);
+  box-shadow: 0 0 26px rgba(139, 118, 255, 0.14) inset;
+  color: #d6cdff;
+}
+.cardface__seal svg {
+  width: 60%; height: 60%;
+  fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.cardface__bottom { display: grid; gap: 3px; text-align: center; }
+.cardface__name {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  /* the card is only ~96 px wide on a phone, so the title has to scale with it */
+  font-size: clamp(0.7rem, 9.4cqw, 1rem);
+  font-weight: 600; line-height: 1.12;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: rgba(246, 242, 255, 0.94);
+  overflow-wrap: break-word;
+}
+.cardface__key {
+  font-size: clamp(0.46rem, 5.6cqw, 0.62rem);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: rgba(196, 181, 253, 0.6);
+}
+
+/* the face-down side: a dark card with a small eclipse and a scatter of stars */
+.cardface__back {
+  position: absolute; inset: 0; display: grid; place-items: center;
+}
+.cardface__back::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 22% 18%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 68% 12%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1px 1px at 40% 38%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 78% 62%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 30% 76%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 56% 88%, rgba(255, 255, 255, 0.25), transparent);
+}
+.cardface__eclipse {
+  width: 40%; aspect-ratio: 1; border-radius: 50%;
+  border: 1px solid rgba(196, 181, 253, 0.3);
+  box-shadow: inset -8px 0 14px rgba(139, 118, 255, 0.28), 0 0 22px rgba(139, 118, 255, 0.16);
+}
+
+.tarot-card { margin: 0; display: grid; gap: 8px; container-type: inline-size; }
+.tarot-card__pos {
+  text-align: center; font-size: 0.68rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--muted-2);
+}
+.tarot-card__meaning { font-size: 0.82rem; color: var(--muted); line-height: 1.45; }
+@media (max-width: 680px) {
+  .tarot-card__meaning { font-size: 0.72rem; line-height: 1.4; }
+  .cardface { padding: 10px 6px 9px; }
+  .cardface__key { font-size: 0.5rem; letter-spacing: 0.1em; }
+  .cardface__top { font-size: 0.5rem; letter-spacing: 0.14em; }
+}
 /* 7 · phone */
 @media (max-width: 1000px) {
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }

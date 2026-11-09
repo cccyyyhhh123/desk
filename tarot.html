@@ -10,7 +10,7 @@
 <meta name="theme-color" content="#0b0b10">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -32,8 +32,8 @@
 <main class="shell tool">
   <header class="tool__head">
     <h1>Three cards</h1>
-    <p>Past, present, future — drawn from the twenty-two major arcana. It is a way to
-       put a question into words, not a prediction: nothing here knows anything you do not.</p>
+    <p>Past, present, future — drawn from the twenty-two major arcana. It is a way to put a
+       question into words, not a prediction: nothing here knows anything you do not.</p>
   </header>
 
   <section class="panel">
@@ -50,36 +50,130 @@
 <script src="sky.js"></script>
 <script src="nav.js"></script>
 <script>
+  /* ---------- the twenty-two majors ----------
+     Each card carries a small emblem drawn as SVG in a 64-unit frame, a
+     keyword, and the line that actually answers the question. The emblems
+     are line drawings, not pictures: they hold up at 180 px wide. */
+
+  const ROMAN = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
+                 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI'];
+
   const CARDS = [
-    { n: 0,  name: 'The Fool',           glyph: '✧', meaning: 'A beginning taken without a map. Trust the step, not the plan.' },
-    { n: 1,  name: 'The Magician',       glyph: '✦', meaning: 'You already have the tools. The question is whether you will use them.' },
-    { n: 2,  name: 'The High Priestess', glyph: '☾', meaning: 'Something is known but not yet said. Listen before acting.' },
-    { n: 3,  name: 'The Empress',        glyph: '⚘', meaning: 'Growth that needs tending rather than pushing.' },
-    { n: 4,  name: 'The Emperor',        glyph: '♛', meaning: 'Structure, rules, the frame that makes the work possible.' },
-    { n: 5,  name: 'The Hierophant',     glyph: '✚', meaning: 'Tradition and teaching. What has been done well before you.' },
-    { n: 6,  name: 'The Lovers',         glyph: '♡', meaning: 'A choice made from what you value, not from what is convenient.' },
-    { n: 7,  name: 'The Chariot',        glyph: '⚑', meaning: 'Momentum held in two directions at once — keep the reins.' },
-    { n: 8,  name: 'Strength',           glyph: '∞', meaning: 'Patience used as force. The gentler hand wins.' },
-    { n: 9,  name: 'The Hermit',         glyph: '☥', meaning: 'Withdraw to think. The answer is quieter than the question.' },
-    { n: 10, name: 'Wheel of Fortune',   glyph: '☸', meaning: 'The part that turns without you. Work with the turn.' },
-    { n: 11, name: 'Justice',            glyph: '⚖', meaning: 'Weigh it honestly; the scale does not care what you hoped.' },
-    { n: 12, name: 'The Hanged Man',     glyph: '⚓', meaning: 'A pause that is not wasted. Look at it upside down.' },
-    { n: 13, name: 'Death',              glyph: '☠', meaning: 'An ending that makes room. Not a loss, a close.' },
-    { n: 14, name: 'Temperance',         glyph: '⚗', meaning: 'Mixing two things carefully until neither dominates.' },
-    { n: 15, name: 'The Devil',          glyph: '⛓', meaning: 'A habit worn as a chain. Check whether the lock is real.' },
-    { n: 16, name: 'The Tower',          glyph: '⚡', meaning: 'A structure breaking so the ground shows through.' },
-    { n: 17, name: 'The Star',           glyph: '★', meaning: 'Recovery, quietly. Something to aim at again.' },
-    { n: 18, name: 'The Moon',           glyph: '☽', meaning: 'Half-lit. Do not decide from a shape you cannot see.' },
-    { n: 19, name: 'The Sun',            glyph: '☀', meaning: 'Clarity, plainly. Say the thing out loud.' },
-    { n: 20, name: 'Judgement',          glyph: '⚜', meaning: 'A call to account — by you, first of all.' },
-    { n: 21, name: 'The World',          glyph: '❂', meaning: 'A loop closed. Take the credit, then start the next one.' }
+    {
+      n: 0, name: 'The Fool', keyword: 'a beginning',
+      emblem: '<path d="M32 9l3.4 19.6L55 32l-19.6 3.4L32 55l-3.4-19.6L9 32l19.6-3.4z"/><circle cx="32" cy="32" r="2.4"/>',
+      meaning: 'A beginning taken without a map. Trust the step, not the plan.'
+    },
+    {
+      n: 1, name: 'The Magician', keyword: 'the tools',
+      emblem: '<circle cx="23" cy="38" r="8"/><circle cx="41" cy="38" r="8"/><path d="M32 8v18"/>',
+      meaning: 'You already have the tools. The question is whether you will use them.'
+    },
+    {
+      n: 2, name: 'The High Priestess', keyword: 'the unspoken',
+      emblem: '<path d="M40 13a19 19 0 1 0 0 38 15 15 0 1 1 0-38z"/>',
+      meaning: 'Something is known but not yet said. Listen before acting.'
+    },
+    {
+      n: 3, name: 'The Empress', keyword: 'growth',
+      emblem: '<circle cx="32" cy="36" r="12"/><path d="M32 24V10M32 16l-6-6M32 16l6-6"/>',
+      meaning: 'Growth that needs tending rather than pushing.'
+    },
+    {
+      n: 4, name: 'The Emperor', keyword: 'the frame',
+      emblem: '<path d="M13 46h38l-4-20-10 9-5-15-5 15-10-9z"/>',
+      meaning: 'Structure, rules, the frame that makes the work possible.'
+    },
+    {
+      n: 5, name: 'The Hierophant', keyword: 'tradition',
+      emblem: '<path d="M32 10v44M19 20h26M22 33h20M25 46h14"/>',
+      meaning: 'Tradition and teaching. What has been done well before you.'
+    },
+    {
+      n: 6, name: 'The Lovers', keyword: 'a choice',
+      emblem: '<circle cx="25" cy="34" r="13"/><circle cx="39" cy="34" r="13"/>',
+      meaning: 'A choice made from what you value, not from what is convenient.'
+    },
+    {
+      n: 7, name: 'The Chariot', keyword: 'momentum',
+      emblem: '<circle cx="32" cy="32" r="17"/><path d="M32 15v34M15 32h34"/>',
+      meaning: 'Momentum held in two directions at once — keep the reins.'
+    },
+    {
+      n: 8, name: 'Strength', keyword: 'patience',
+      emblem: '<circle cx="32" cy="35" r="12"/><path d="M21 27l-4-8 10 3M43 27l4-8-10 3"/><path d="M32 35v5M26 37h12"/><circle cx="27" cy="31" r="1.1"/><circle cx="37" cy="31" r="1.1"/>',
+      meaning: 'Patience used as force. The gentler hand wins.'
+    },
+    {
+      n: 9, name: 'The Hermit', keyword: 'withdrawal',
+      emblem: '<rect x="23" y="24" width="18" height="24" rx="3"/><path d="M32 8v8M26 12h12M32 20v4"/>',
+      meaning: 'Withdraw to think. The answer is quieter than the question.'
+    },
+    {
+      n: 10, name: 'Wheel of Fortune', keyword: 'the turn',
+      emblem: '<circle cx="32" cy="32" r="17"/><path d="M32 15v34M15 32h34M20 20l24 24M44 20L20 44"/>',
+      meaning: 'The part that turns without you. Work with the turn.'
+    },
+    {
+      n: 11, name: 'Justice', keyword: 'the scale',
+      emblem: '<path d="M32 10v44M18 18h28"/><path d="M10 40a8 8 0 0 0 16 0z"/><path d="M38 40a8 8 0 0 0 16 0z"/>',
+      meaning: 'Weigh it honestly; the scale does not care what you hoped.'
+    },
+    {
+      n: 12, name: 'The Hanged Man', keyword: 'the pause',
+      emblem: '<path d="M18 14h28L32 42z"/><path d="M32 42v14"/>',
+      meaning: 'A pause that is not wasted. Look at it upside down.'
+    },
+    {
+      n: 13, name: 'Death', keyword: 'an ending',
+      emblem: '<path d="M14 50c14-6 22-16 26-30"/><path d="M38 12a12 12 0 0 1 12 12"/><path d="M20 40l-6 6"/>',
+      meaning: 'An ending that makes room. Not a loss, a close.'
+    },
+    {
+      n: 14, name: 'Temperance', keyword: 'the mix',
+      emblem: '<path d="M14 22h15v8a7.5 7.5 0 0 1-15 0z"/><path d="M35 38h15v8a7.5 7.5 0 0 1-15 0z"/><path d="M32 12c-3.2 4.2-4.6 6.6-4.6 8.6a4.6 4.6 0 0 0 9.2 0c0-2-1.4-4.4-4.6-8.6z"/>',
+      meaning: 'Mixing two things carefully until neither dominates.'
+    },
+    {
+      n: 15, name: 'The Devil', keyword: 'the chain',
+      emblem: '<g transform="rotate(180 32 32)"><path d="M32 10l6.5 17.5L56 28l-13 11.5L47 57l-15-9-15 9 4-17.5L8 28l17.5-.5z"/></g>',
+      meaning: 'A habit worn as a chain. Check whether the lock is real.'
+    },
+    {
+      n: 16, name: 'The Tower', keyword: 'the break',
+      emblem: '<path d="M23 54V26h18v28"/><path d="M18 26l14-9 14 9"/><path d="M37 16l-7 12h7l-5 10"/>',
+      meaning: 'A structure breaking so the ground shows through.'
+    },
+    {
+      n: 17, name: 'The Star', keyword: 'recovery',
+      emblem: '<path d="M32 9l3.2 19.8L55 32l-19.8 3.2L32 55l-3.2-19.8L9 32l19.8-3.2z"/><path d="M18 18l28 28M46 18L18 46" opacity="0.4"/><circle cx="14" cy="14" r="1.6"/><circle cx="50" cy="50" r="1.6"/>',
+      meaning: 'Recovery, quietly. Something to aim at again.'
+    },
+    {
+      n: 18, name: 'The Moon', keyword: 'half light',
+      emblem: '<path d="M42 13a19 19 0 1 0 0 38 15 15 0 1 1 0-38z"/><circle cx="19" cy="22" r="1.8"/><circle cx="17" cy="33" r="1.3"/>',
+      meaning: 'Half-lit. Do not decide from a shape you cannot see.'
+    },
+    {
+      n: 19, name: 'The Sun', keyword: 'plain sight',
+      emblem: '<circle cx="32" cy="32" r="11"/><path d="M32 8v6M32 50v6M8 32h6M50 32h6M15 15l4.4 4.4M44.6 44.6L49 49M49 15l-4.4 4.4M19.4 44.6L15 49"/>',
+      meaning: 'Clarity, plainly. Say the thing out loud.'
+    },
+    {
+      n: 20, name: 'Judgement', keyword: 'the call',
+      emblem: '<path d="M10 30l22-11v26L10 34z"/><path d="M34 25h7a9 9 0 0 1 0 18h-7"/><path d="M22 44v6"/>',
+      meaning: 'A call to account — by you, first of all.'
+    },
+    {
+      n: 21, name: 'The World', keyword: 'a loop closed',
+      emblem: '<circle cx="32" cy="32" r="14"/><circle cx="32" cy="9" r="2.2"/><circle cx="32" cy="55" r="2.2"/><circle cx="9" cy="32" r="2.2"/><circle cx="55" cy="32" r="2.2"/>',
+      meaning: 'A loop closed. Take the credit, then start the next one.'
+    }
   ];
 
   const POSITIONS = ['Past', 'Present', 'Future'];
   const spread = document.getElementById('spread');
   const status = document.getElementById('status');
-  const drawBtn = document.getElementById('draw');
-  const flipAll = document.getElementById('flipAll');
 
   let current = [];
   let revealed = [false, false, false];
@@ -93,31 +187,60 @@
     return deck;
   }
 
+  function buildFace(card, shown) {
+    const face = document.createElement('div');
+    face.className = 'cardface' + (shown ? ' is-open' : '');
+    face.tabIndex = 0;
+    face.setAttribute('role', 'button');
+    face.setAttribute('aria-label', shown ? card.name : 'Turn over the ' + card.name);
+
+    if (!shown) {
+      const back = document.createElement('span');
+      back.className = 'cardface__back';
+      back.innerHTML = '<span class="cardface__eclipse"></span>';
+      face.appendChild(back);
+      return face;
+    }
+
+    const num = document.createElement('span');
+    num.className = 'cardface__num';
+    num.textContent = ROMAN[card.n];
+
+    const seal = document.createElement('span');
+    seal.className = 'cardface__seal';
+    seal.innerHTML = '<svg viewBox="0 0 64 64" aria-hidden="true">' + card.emblem + '</svg>';
+
+    const name = document.createElement('span');
+    name.className = 'cardface__name';
+    name.textContent = card.name;
+
+    const key = document.createElement('span');
+    key.className = 'cardface__key';
+    key.textContent = card.keyword;
+
+    const top = document.createElement('span');
+    top.className = 'cardface__top';
+    top.textContent = '· ' + ROMAN[card.n] + ' ·';
+
+    const bottom = document.createElement('span');
+    bottom.className = 'cardface__bottom';
+    bottom.append(name, key);
+
+    face.append(top, seal, bottom);
+    return face;
+  }
+
   function render() {
     spread.replaceChildren();
     current.forEach(function (card, i) {
       const figure = document.createElement('figure');
+      figure.className = 'tarot-card';
 
-      const face = document.createElement('div');
-      face.className = 'cardface' + (revealed[i] ? '' : ' is-back');
-      face.tabIndex = 0;
-      face.setAttribute('role', 'button');
-      face.setAttribute('aria-label', revealed[i] ? card.name : 'Turn over the ' + POSITIONS[i].toLowerCase() + ' card');
+      const position = document.createElement('figcaption');
+      position.className = 'tarot-card__pos';
+      position.textContent = POSITIONS[i];
 
-      const num = document.createElement('span');
-      num.className = 'num';
-      num.textContent = revealed[i] ? '· ' + String(card.n).padStart(2, '0') + ' ·' : '?';
-
-      const glyph = document.createElement('span');
-      glyph.className = 'glyph';
-      glyph.textContent = revealGlyph(card, revealed[i]);
-
-      const name = document.createElement('span');
-      name.className = 'name';
-      name.textContent = revealed[i] ? card.name : 'hidden';
-
-      face.append(num, glyph, name);
-
+      const face = buildFace(card, revealed[i]);
       function flip() {
         revealed[i] = !revealed[i];
         render();
@@ -128,20 +251,13 @@
         if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); flip(); }
       });
 
-      const caption = document.createElement('figcaption');
-      const strong = document.createElement('b');
-      strong.textContent = POSITIONS[i] + (revealed[i] ? ' · ' + card.name : '');
-      const text = document.createElement('span');
-      text.textContent = revealed[i] ? card.meaning : 'Turn it over to read it.';
-      caption.append(strong, text);
+      const meaning = document.createElement('p');
+      meaning.className = 'tarot-card__meaning';
+      meaning.textContent = revealed[i] ? card.meaning : 'Turn it over to read it.';
 
-      figure.append(face, caption);
+      figure.append(position, face, meaning);
       spread.appendChild(figure);
     });
-  }
-
-  function revealGlyph(card, shown) {
-    return shown ? card.glyph : '✧';
   }
 
   function updateStatus() {
@@ -166,8 +282,8 @@
     } catch (e) {}
   }
 
-  drawBtn.addEventListener('click', draw);
-  flipAll.addEventListener('click', function () {
+  document.getElementById('draw').addEventListener('click', draw);
+  document.getElementById('flipAll').addEventListener('click', function () {
     const allOpen = revealed.every(Boolean);
     revealed = revealed.map(function () { return !allOpen; });
     render();
