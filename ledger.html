@@ -54,6 +54,25 @@
   </section>
 
   <section class="panel">
+    <div class="row" style="justify-content:space-between; align-items:flex-start">
+      <div style="max-width:34rem">
+        <h2>微信 · WeChat</h2>
+        <p class="hint small" style="margin-bottom:0">
+          WeChat has no web API an outside page can read, but it does export a bill:
+          <span class="mono">我 → 服务 → 钱包 → 账单 → 账单下载 → 用于个人对账</span>.
+          Unzip it, pick the CSV here, and the entries are read in this browser — the file is
+          never uploaded anywhere.
+        </p>
+      </div>
+      <label class="btn btn--primary" for="wxFile">Import a WeChat bill</label>
+      <input id="wxFile" type="file" accept=".csv,text/csv" hidden>
+    </div>
+    <p class="small muted" id="wxStatus" role="status" aria-live="polite" style="margin-top:10px">
+      Nothing imported yet.
+    </p>
+  </section>
+
+  <section class="panel">
     <h2>Add an entry</h2>
     <form class="entryform" id="form" style="margin-top:12px">
       <label class="field">
@@ -208,7 +227,7 @@
     let rows = list().slice();
     if (month) rows = rows.filter(function (entry) { return entry.date.indexOf(month) === 0; });
     if (type) rows = rows.filter(function (entry) { return entry.type === type; });
-    rows.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id; });
+    rows.sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : String(b.id).localeCompare(String(a.id)); });
 
     el.rows.replaceChildren();
     rows.forEach(function (entry) {
@@ -308,6 +327,174 @@
     sessionStorage.setItem(ACTIVE, key);
     render();
   });
+
+  /* ---------- WeChat bill ----------
+     The exported file is a CSV behind ~16 lines of preamble. Amounts, dates
+     and the 收/支 column are the only things needed, so those are read by
+     header name instead of by position — the exporter moves columns around. */
+
+  function parseCsv(text) {
+    const rows = [];
+    let row = [];
+    let field = '';
+    let quoted = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (quoted) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else quoted = false;
+        } else field += ch;
+      } else if (ch === '"') {
+        quoted = true;
+      } else if (ch === ',') {
+        row.push(field);
+        field = '';
+      } else if (ch === '\n') {
+        row.push(field);
+        rows.push(row);
+        row = [];
+        field = '';
+      } else if (ch !== '\r') {
+        field += ch;
+      }
+    }
+    if (field.length || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  function parseWeChatBill(text) {
+    const rows = parseCsv(String(text).replace(/^\uFEFF/, ''));
+    const headerRow = rows.find(function (row) {
+      return row.some(function (cell) { return cell.trim() === '交易时间'; });
+    });
+    if (!headerRow) return null;
+
+    const head = headerRow.map(function (cell) { return cell.trim(); });
+    const at = function (name) { return head.indexOf(name); };
+    const columns = {
+      time: at('交易时间'),
+      type: at('交易类型'),
+      party: at('交易对方'),
+      item: at('商品'),
+      flow: at('收/支'),
+      amount: at('金额(元)'),
+      order: at('交易单号')
+    };
+    if (columns.time < 0 || columns.flow < 0 || columns.amount < 0) return null;
+
+    const start = rows.indexOf(headerRow) + 1;
+    const out = [];
+    for (let i = start; i < rows.length; i++) {
+      const row = rows[i];
+      if (!row || row.length < 3) continue;
+
+      const flow = (row[columns.flow] || '').trim();
+      if (flow !== '收入' && flow !== '支出') continue;
+
+      const amount = Number((row[columns.amount] || '').replace(/[¥￥,\s]/g, ''));
+      if (!(amount > 0)) continue;
+
+      const date = (row[columns.time] || '').trim().slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+
+      const category = (row[columns.type] || '').trim() || 'WeChat';
+      const clean = function (value) {
+        const text = (value || '').trim();
+        return text === '/' || text === '—' || text === '-' ? '' : text;
+      };
+      const party = clean(row[columns.party]);
+      const item = clean(row[columns.item]);
+      const order = (row[columns.order] || '').trim();
+
+      out.push({
+        key: order || [date, category, party, amount, flow].join('|'),
+        date,
+        type: flow === '收入' ? 'deposit' : 'spend',
+        category,
+        money: amount,
+        note: [party, item].filter(Boolean).join(' · ')
+      });
+    }
+    return out;
+  }
+
+  /* the same bill imported twice must not double the book */
+  function billId(key) {
+    let hash = 2166136261;
+    for (let i = 0; i < key.length; i++) {
+      hash ^= key.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return 'wx' + (hash >>> 0);
+  }
+
+  const wxInput = document.getElementById('wxFile');
+  const wxStatus = document.getElementById('wxStatus');
+
+  if (wxInput) {
+    wxInput.addEventListener('change', function () {
+      const file = wxInput.files && wxInput.files[0];
+      if (!file) return;
+
+      file.arrayBuffer().then(function (buffer) {
+        let text;
+        try {
+          text = new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+        } catch (error) {
+          /* older exports are GBK */
+          text = new TextDecoder('gbk').decode(buffer);
+        }
+
+        const parsed = parseWeChatBill(text);
+        if (!parsed) {
+          wxStatus.textContent = 'That file does not look like a WeChat bill — the header row with 交易时间 is missing.';
+          wxInput.value = '';
+          return;
+        }
+        if (!parsed.length) {
+          wxStatus.textContent = 'Nothing to import: no 收入 or 支出 rows were found in that file.';
+          wxInput.value = '';
+          return;
+        }
+
+        const seen = new Set(list().map(function (entry) { return entry.id; }));
+        let added = 0;
+        let money = 0;
+        let spent = 0;
+
+        parsed.forEach(function (item) {
+          const id = billId(item.key);
+          if (seen.has(id)) return;
+          seen.add(id);
+          books[key].push({
+            id,
+            date: item.date,
+            type: item.type,
+            class: item.category,
+            money: item.money,
+            note: item.note
+          });
+          added += 1;
+          if (item.type === 'deposit') money += item.money;
+          else spent += item.money;
+        });
+
+        save();
+        render();
+        wxStatus.textContent = added
+          ? 'Read ' + parsed.length + ' rows, added ' + added + ' new ' +
+            (added === 1 ? 'entry' : 'entries') + ' (in ' + money.toFixed(2) +
+            ', out ' + spent.toFixed(2) + '). ' + (parsed.length - added) + ' were already in the book.'
+          : 'All ' + parsed.length + ' rows in that file are already in the book.';
+        wxInput.value = '';
+      }).catch(function () {
+        wxStatus.textContent = 'That file could not be read.';
+        wxInput.value = '';
+      });
+    });
+  }
 
   el.date.value = new Date().toISOString().slice(0, 10);
   render();
